@@ -1,5 +1,7 @@
 mod core;
+mod engine;
+mod Player;
 
 fn main() {
-    println!("Hello, world!");
+    engine::init_app();
 }
