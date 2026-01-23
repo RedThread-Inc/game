@@ -1,7 +1,7 @@
-pub(crate) mod movement;
-pub(crate) mod spawn;
 pub(crate) mod animate;
+pub(crate) mod movement;
 pub(crate) mod plugin;
+pub(crate) mod spawn;
 
 use bevy::prelude::{Component, Deref, DerefMut, Timer};
 
@@ -30,5 +30,5 @@ pub(crate) struct AnimationState {
 
 #[derive(Component, Clone)]
 pub(crate) struct Player {
-    pub(crate) name: String
+    pub(crate) name: String,
 }

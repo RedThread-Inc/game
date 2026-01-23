@@ -1,6 +1,6 @@
-use bevy::prelude::*;
-use crate::enemy::{Enemy, AnimationState, MOVE_SPEED as ENEMY_SPEED};
+use crate::enemy::{AnimationState, Enemy, MOVE_SPEED as ENEMY_SPEED};
 use crate::player::Player;
+use bevy::prelude::*;
 
 pub(crate) fn move_enemy_towards_player(
     time: Res<Time>,
@@ -21,9 +21,17 @@ pub(crate) fn move_enemy_towards_player(
 
             anim.moving = true;
             anim.facing = if delta.x.abs() > delta.y.abs() {
-                if delta.x > 0.0 { crate::enemy::Facing::Right } else { crate::enemy::Facing::Left }
+                if delta.x > 0.0 {
+                    crate::enemy::Facing::Right
+                } else {
+                    crate::enemy::Facing::Left
+                }
             } else {
-                if delta.y > 0.0 { crate::enemy::Facing::Up } else { crate::enemy::Facing::Down }
+                if delta.y > 0.0 {
+                    crate::enemy::Facing::Up
+                } else {
+                    crate::enemy::Facing::Down
+                }
             };
         } else {
             anim.moving = false;

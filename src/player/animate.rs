@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use crate::player::*;
+use bevy::prelude::*;
 
 pub(crate) fn animate_player(
     time: Res<Time>,
@@ -48,7 +48,6 @@ pub(crate) fn animate_player(
 
     anim.was_moving = anim.moving;
 }
-
 
 fn row_start_index(facing: Facing) -> usize {
     row_zero_based(facing) * WALK_FRAMES
