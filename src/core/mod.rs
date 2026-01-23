@@ -1,2 +1,2 @@
-pub(crate) mod time;
 mod math;
+pub(crate) mod time;

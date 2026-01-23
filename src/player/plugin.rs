@@ -1,7 +1,7 @@
-use bevy::prelude::*;
 use crate::player::animate::animate_player;
 use crate::player::movement::move_player;
 use crate::player::spawn::spawn_player;
+use bevy::prelude::*;
 
 pub(crate) struct PlayerPlugin;
 

@@ -1,7 +1,7 @@
-use bevy::prelude::*;
-use crate::enemy::spawn::spawn_enemies;
 use crate::enemy::animate::animate_enemies;
 use crate::enemy::movement::move_enemy_towards_player;
+use crate::enemy::spawn::spawn_enemies;
+use bevy::prelude::*;
 
 pub(crate) struct EnemyPlugin;
 

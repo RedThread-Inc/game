@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use crate::enemy::*;
+use bevy::prelude::*;
 
 pub(crate) fn animate_enemies(
     time: Res<Time>,

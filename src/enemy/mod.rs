@@ -1,7 +1,7 @@
-pub(crate) mod spawn;
 pub(crate) mod animate;
-pub(crate) mod plugin;
 pub(crate) mod movement;
+pub(crate) mod plugin;
+pub(crate) mod spawn;
 
 use bevy::prelude::*;
 

@@ -1,8 +1,8 @@
+use crate::enemy::Enemy;
+use crate::player::{AnimationState, Facing, MOVE_SPEED, Player};
 use bevy::input::ButtonInput;
 use bevy::math::Vec2;
 use bevy::prelude::{KeyCode, Res, Single, Time, Transform, With, Without};
-use crate::enemy::Enemy;
-use crate::player::{AnimationState, Facing, Player, MOVE_SPEED};
 
 pub(crate) fn move_player(
     input: Res<ButtonInput<KeyCode>>,
@@ -13,7 +13,7 @@ pub(crate) fn move_player(
 
     let mut direction = Vec2::ZERO;
 
-    if input.pressed(KeyCode::ArrowLeft) || input.pressed(KeyCode::KeyQ) {
+    if input.pressed(KeyCode::ArrowLeft) || input.pressed(KeyCode::KeyA) {
         direction.x -= 1.0;
         anim.facing = Facing::Left;
     }
@@ -21,7 +21,7 @@ pub(crate) fn move_player(
         direction.x += 1.0;
         anim.facing = Facing::Right;
     }
-    if input.pressed(KeyCode::ArrowUp) || input.pressed(KeyCode::KeyZ) {
+    if input.pressed(KeyCode::ArrowUp) || input.pressed(KeyCode::KeyW) {
         direction.y += 1.0;
         anim.facing = Facing::Up;
     }
