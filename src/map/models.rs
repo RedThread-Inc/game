@@ -1,20 +1,20 @@
 use bevy_procedural_tilemaps::prelude::*;
 use crate::map::assets::SpawnableAsset;
 
-pub struct TerrainModelBuilder {
-    pub models: ModelCollection<Cartesian3D>,
-    pub assets: Vec<Vec<SpawnableAsset>>,
+pub(crate) struct TerrainModelBuilder {
+    pub(crate) models: ModelCollection<Cartesian3D>,
+    pub(crate) assets: Vec<Vec<SpawnableAsset>>,
 }
 
 impl TerrainModelBuilder {
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self {
             models: ModelCollection::new(),
             assets: Vec::new(),
         }
     }
 
-    pub fn create_model<T>(
+    pub(crate) fn create_model<T>(
         &mut self,
         template: T,
         assets: Vec<SpawnableAsset>,
@@ -27,7 +27,7 @@ impl TerrainModelBuilder {
         model_ref
     }
 
-    pub fn into_parts(self) -> (Vec<Vec<SpawnableAsset>>, ModelCollection<Cartesian3D>) {
+    pub(crate) fn into_parts(self) -> (Vec<Vec<SpawnableAsset>>, ModelCollection<Cartesian3D>) {
         (self.assets, self.models)
     }
 }

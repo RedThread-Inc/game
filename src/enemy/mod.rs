@@ -20,13 +20,13 @@ pub(crate) enum Facing {
 }
 
 #[derive(Component, Deref, DerefMut)]
-pub(crate) struct AnimationTimer(pub Timer);
+pub(crate) struct AnimationTimer(pub(crate) Timer);
 
 #[derive(Component)]
 pub(crate) struct AnimationState {
-    pub facing: Facing,
-    pub moving: bool,
-    pub was_moving: bool,
+    pub(crate) facing: Facing,
+    pub(crate) moving: bool,
+    pub(crate) was_moving: bool,
 }
 
 #[derive(Component)]

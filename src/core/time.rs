@@ -1,10 +1,10 @@
-pub struct RTTime {
-    pub delta: f32,
-    pub elapsed: f32,
+pub(crate) struct RTTime {
+    pub(crate) delta: f32,
+    pub(crate) elapsed: f32,
 }
 
 impl RTTime {
-    pub fn update(&mut self, delta: f32) {
+    pub(crate) fn update(&mut self, delta: f32) {
         self.delta = delta;
         self.elapsed += delta;
     }
