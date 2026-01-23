@@ -1,15 +1,14 @@
 use bevy::prelude::*;
-use crate::player::*;
-use crate::player::animate::atlas_index_for;
+use crate::enemy::*;
+use crate::enemy::animate::atlas_index_for;
 
-pub(crate) fn spawn_player(
+pub(crate) fn spawn_enemies(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    let player = Player { name: "XenHom".to_string() };
+    let texture = asset_server.load("skeleton-spritesheet.png");
 
-    let texture = asset_server.load("character-spritesheet.png");
     let layout = atlas_layouts.add(TextureAtlasLayout::from_grid(
         UVec2::splat(TILE_SIZE),
         WALK_FRAMES as u32,
@@ -29,9 +28,13 @@ pub(crate) fn spawn_player(
                 index: start_index,
             },
         ),
-        Transform::from_translation(Vec3::ZERO),
-        player,
-        AnimationState { facing, moving: false, was_moving: false },
+        Transform::from_translation(Vec3::new(250.0, 50.0, 0.0)),
+        Enemy,
+        AnimationState {
+            facing,
+            moving: true,
+            was_moving: false,
+        },
         AnimationTimer(Timer::from_seconds(ANIM_DT, TimerMode::Repeating)),
     ));
 }

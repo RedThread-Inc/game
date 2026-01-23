@@ -1,6 +1,7 @@
 mod core;
 mod engine;
-mod Player;
+mod player;
+mod enemy;
 
 fn main() {
     engine::init_app();

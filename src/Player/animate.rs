@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::Player::*;
+use crate::player::*;
 
 pub(crate) fn animate_player(
     time: Res<Time>,
