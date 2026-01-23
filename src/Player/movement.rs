@@ -1,12 +1,13 @@
 use bevy::input::ButtonInput;
 use bevy::math::Vec2;
-use bevy::prelude::{KeyCode, Res, Single, Time, Transform, With};
-use crate::Player::{AnimationState, Facing, Player, MOVE_SPEED};
+use bevy::prelude::{KeyCode, Res, Single, Time, Transform, With, Without};
+use crate::enemy::Enemy;
+use crate::player::{AnimationState, Facing, Player, MOVE_SPEED};
 
 pub(crate) fn move_player(
     input: Res<ButtonInput<KeyCode>>,
     time: Res<Time>,
-    player: Single<(&mut Transform, &mut AnimationState), With<Player>>,
+    player: Single<(&mut Transform, &mut AnimationState), (With<Player>, Without<Enemy>)>,
 ) {
     let (mut transform, mut anim) = player.into_inner();
 

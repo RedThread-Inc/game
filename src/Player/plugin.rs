@@ -1,9 +1,9 @@
-use bevy::prelude::{App, Plugin, Startup, Update};
-use crate::Player::animate::animate_player;
-use crate::Player::movement::move_player;
-use crate::Player::spawn::spawn_player;
+use bevy::prelude::*;
+use crate::player::animate::animate_player;
+use crate::player::movement::move_player;
+use crate::player::spawn::spawn_player;
 
-pub(crate) struct PlayerPlugin;
+pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
