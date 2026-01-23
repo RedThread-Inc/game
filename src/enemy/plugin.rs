@@ -3,7 +3,7 @@ use crate::enemy::spawn::spawn_enemies;
 use crate::enemy::animate::animate_enemies;
 use crate::enemy::movement::move_enemy_towards_player;
 
-pub struct EnemyPlugin;
+pub(crate) struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {

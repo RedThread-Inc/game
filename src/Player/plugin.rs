@@ -3,7 +3,7 @@ use crate::player::animate::animate_player;
 use crate::player::movement::move_player;
 use crate::player::spawn::spawn_player;
 
-pub struct PlayerPlugin;
+pub(crate) struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
