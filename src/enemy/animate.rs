@@ -1,18 +1,17 @@
 use crate::enemy::*;
 use bevy::prelude::*;
+use crate::exceptions::RTGException;
 
 pub(crate) fn animate_enemies(
-    time: Res<Time>,
-    mut query: Query<(&mut AnimationState, &mut AnimationTimer, &mut Sprite), With<Enemy>>,
-) {
-    let Ok((mut anim, mut timer, mut sprite)) = query.single_mut() else {
-        return;
-    };
-
-    let atlas = match sprite.texture_atlas.as_mut() {
-        Some(a) => a,
-        None => return,
-    };
+    time: &Time,
+    anim: &mut AnimationState,
+    timer: &mut AnimationTimer,
+    sprite: &mut Sprite,
+) -> Result<(), RTGException> {
+    let atlas = sprite
+        .texture_atlas
+        .as_mut()
+        .ok_or(RTGException::RTG_ENEMY_ANIMATION_TEXTURE_ATLAS_MISSING)?;
 
     let target_row = row_zero_based(anim.facing);
     let current_col = atlas.index % WALK_FRAMES;
@@ -31,7 +30,31 @@ pub(crate) fn animate_enemies(
     }
 
     anim.was_moving = anim.moving;
+
+    Ok(())
 }
+
+pub(crate) fn animate_enemies_system(
+    time: Res<Time>,
+    mut query: Query<(&mut AnimationState, &mut AnimationTimer, &mut Sprite), With<Enemy>>,
+) {
+    let (mut anim, mut timer, mut sprite) = match query.single_mut() {
+        Ok(v) => v,
+        Err(bevy::ecs::query::QuerySingleError::NoEntities(_)) => {
+            println!("[ERROR] - animate_enemies: no Enemy entity found");
+            return;
+        }
+        Err(bevy::ecs::query::QuerySingleError::MultipleEntities(_)) => {
+            println!("[ERROR] - animate_enemies: multiple Enemy entities found");
+            return;
+        }
+    };
+
+    if let Err(e) = animate_enemies(&time, &mut anim, &mut timer, &mut sprite) {
+        println!("[ERROR] - animate_enemies failed: {:?}", e);
+    }
+}
+
 
 fn row_start_index(facing: Facing) -> usize {
     row_zero_based(facing) * WALK_FRAMES
