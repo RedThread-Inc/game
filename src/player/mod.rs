@@ -31,5 +31,6 @@ pub(crate) struct AnimationState {
 
 #[derive(Component, Clone)]
 pub(crate) struct Player {
-    pub(crate) name: String,
+    pub(crate) health: f32,
+    pub(crate) damage_cooldown: Timer,
 }

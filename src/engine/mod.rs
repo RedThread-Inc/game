@@ -1,6 +1,7 @@
 use crate::enemy::movement::move_enemy_towards_player_system;
 use crate::enemy::plugin::EnemyPlugin;
 use crate::player::plugin::PlayerPlugin;
+use crate::interface::plugin::InterfacePlugin;
 use bevy::{
     prelude::*,
     window::{Window, WindowPlugin, WindowResolution},
@@ -35,7 +36,7 @@ pub(crate) fn init_app() {
                 })
                 .set(ImagePlugin::default_nearest()),
         )
-        .add_plugins((PlayerPlugin, EnemyPlugin))
+        .add_plugins((PlayerPlugin, EnemyPlugin, InterfacePlugin))
         .add_systems(Startup, |windows: Query<&Window, With<PrimaryWindow>>| {
             let window = windows.single().expect("Primary window must exist");
             let grid_x = (window.width() / TILE_SIZE).floor() as u32;
