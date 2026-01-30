@@ -14,6 +14,7 @@ impl TerrainModelBuilder {
         }
     }
 
+
     pub(crate) fn create_model<T>(
         &mut self,
         template: T,

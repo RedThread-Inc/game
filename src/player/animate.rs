@@ -1,18 +1,22 @@
+
 use crate::player::*;
 use bevy::prelude::*;
+use crate::exceptions::RTGException;
 
 pub(crate) fn animate_player(
     time: Res<Time>,
     mut query: Query<(&mut AnimationState, &mut AnimationTimer, &mut Sprite), With<Player>>,
-) {
+) -> Result<(), RTGException> {
     let Ok((mut anim, mut timer, mut sprite)) = query.single_mut() else {
-        return;
+        return Err(RTGException::RTG_PLAYER_ANIMATION_CANT_LOAD);
     };
 
-    let atlas = match sprite.texture_atlas.as_mut() {
-        Some(a) => a,
-        None => return,
+    let atlasw: std::result::Result<&mut _, RTGException> = match sprite.texture_atlas.as_mut() {
+        Some(a) => Ok(a),
+        None => return Err(RTGException::RTG_PLAYER_ANIMATION_TEXTURE_ATLAS_CANT_LOAD),
     };
+
+    let atlas = atlasw.unwrap();
 
     let target_row = row_zero_based(anim.facing);
     let mut current_col = atlas.index % WALK_FRAMES;
@@ -47,6 +51,16 @@ pub(crate) fn animate_player(
     }
 
     anim.was_moving = anim.moving;
+    Ok(())
+}
+
+pub(crate) fn animate_player_system(
+    time: Res<Time>,
+    query: Query<(&mut AnimationState, &mut AnimationTimer, &mut Sprite), With<Player>>,
+) {
+    if let Err(e) = animate_player(time, query) {
+        println!("[ERROR] - Animation error: {:?}", e);
+    }
 }
 
 fn row_start_index(facing: Facing) -> usize {
