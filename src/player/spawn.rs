@@ -32,7 +32,7 @@ fn spawn_player(
                 index: start_index,
             },
         ),
-        Transform::from_translation(Vec3::ZERO),
+        Transform::from_translation(Vec3::new(0.0, 0.0, PLAYER_Z)),
         player,
         AnimationState {
             facing,

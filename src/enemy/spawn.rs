@@ -28,7 +28,7 @@ pub(crate) fn spawn_enemies(
                 index: start_index,
             },
         ),
-        Transform::from_translation(Vec3::new(250.0, 50.0, 0.0)),
+        Transform::from_translation(Vec3::new(250.0, 50.0, 20.0)),
         Enemy,
         AnimationState {
             facing,
