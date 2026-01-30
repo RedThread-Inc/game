@@ -1,6 +1,7 @@
 use crate::enemy::animate::atlas_index_for;
 use crate::enemy::*;
 use bevy::prelude::*;
+use crate::player::Player;
 
 pub(crate) fn spawn_enemies(
     mut commands: Commands,
@@ -20,6 +21,11 @@ pub(crate) fn spawn_enemies(
     let facing = Facing::Down;
     let start_index = atlas_index_for(facing, 0);
 
+    let enemy = Enemy {
+        health: 100.0,
+        damage: 10.0,
+    };
+
     commands.spawn((
         Sprite::from_atlas_image(
             texture,
@@ -29,7 +35,7 @@ pub(crate) fn spawn_enemies(
             },
         ),
         Transform::from_translation(Vec3::new(250.0, 50.0, 20.0)),
-        Enemy,
+        enemy,
         AnimationState {
             facing,
             moving: true,

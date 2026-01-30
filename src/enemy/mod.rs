@@ -30,4 +30,7 @@ pub(crate) struct AnimationState {
 }
 
 #[derive(Component)]
-pub(crate) struct Enemy;
+pub(crate) struct Enemy{
+    pub(crate) health: f32,
+    pub(crate) damage: f32
+}

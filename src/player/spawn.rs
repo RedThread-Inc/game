@@ -8,7 +8,8 @@ pub(crate) fn spawn_player(
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     let player = Player {
-        name: "XenHom".to_string(),
+        health: 100.0,
+        damage_cooldown: Timer::from_seconds(1.0, TimerMode::Once),
     };
 
     let texture = asset_server.load("character-spritesheet.png");
