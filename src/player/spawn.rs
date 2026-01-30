@@ -1,12 +1,13 @@
 use crate::player::animate::atlas_index_for;
 use crate::player::*;
 use bevy::prelude::*;
+use crate::exceptions::RTGException;
 
-pub(crate) fn spawn_player(
+fn spawn_player(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
-) {
+) -> Result<(), RTGException> {
     let player = Player {
         name: "XenHom".to_string(),
     };
@@ -40,4 +41,16 @@ pub(crate) fn spawn_player(
         },
         AnimationTimer(Timer::from_seconds(ANIM_DT, TimerMode::Repeating)),
     ));
+
+    Ok(())
+}
+
+pub(crate) fn spawn_player_system(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+) {
+    if let Err(e) = spawn_player(commands, asset_server, atlas_layouts) {
+        println!("[ERROR] - Spawn player error : {:?}", e)
+    }
 }
