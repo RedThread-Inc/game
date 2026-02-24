@@ -5,6 +5,7 @@ use crate::map::{
     assets::{load_assets, prepare_tilemap_handles},
     rules::build_world,
 };
+use crate::exceptions::RTGException;
 
 const ASSETS_PATH: &str = "tile_layers";
 const TILEMAP_FILE: &str = "tilemap.png";
@@ -24,11 +25,10 @@ pub(crate) fn setup_generator(
     windows: Query<&Window, With<PrimaryWindow>>,
 ) {
     let window = windows
-        .single()
-        .expect("La fenêtre principale doit exister");
+        .single().map_err(|e| RTGException::REDTHREAD_FAILED_TO_GENERATE_MAP_MISSING_GAME_WINDOW);
 
-    let grid_x = (window.width() / TILE_SIZE).floor() as u32;
-    let grid_y = (window.height() / TILE_SIZE).floor() as u32;
+    let grid_x = (window.clone().unwrap().width() / TILE_SIZE).floor() as u32;
+    let grid_y = (window.unwrap().height() / TILE_SIZE).floor() as u32;
 
     println!("Grid size: {} x {}", grid_x, grid_y);
 

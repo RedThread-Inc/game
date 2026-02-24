@@ -50,8 +50,11 @@ pub(crate) fn spawn_player_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
-) {
+) -> Result<(), RTGException> {
     if let Err(e) = spawn_player(commands, asset_server, atlas_layouts) {
-        println!("[ERROR] - Spawn player error : {:?}", e)
+        println!("{}", e.to_string());
+        return Err(e);
+    } else {
+        Ok(())
     }
 }
