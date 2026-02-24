@@ -3,35 +3,43 @@ use crate::map::models::TerrainModelBuilder;
 use crate::map::sockets::*;
 use bevy_procedural_tilemaps::prelude::*;
 
+pub struct TerrainModelIndices {
+    pub dirt: usize,
+    pub green_grass: usize,
+    pub yellow_grass: usize,
+    pub water: usize,
+}
+
 pub(crate) fn build_world() -> (
     Vec<Vec<SpawnableAsset>>,
     ModelCollection<Cartesian3D>,
     SocketCollection,
+    TerrainModelIndices,
 ) {
     let mut socket_collection = SocketCollection::new();
     let terrain_sockets = create_sockets(&mut socket_collection);
 
     let mut terrain_model_builder = TerrainModelBuilder::new();
 
-    build_dirt_layer(
+    let idx_dirt = build_dirt_layer(
         &mut terrain_model_builder,
         &terrain_sockets,
         &mut socket_collection,
     );
 
-    build_grass_layer(
+    let idx_green_grass = build_grass_layer(
         &mut terrain_model_builder,
         &terrain_sockets,
         &mut socket_collection,
     );
 
-    build_yellow_grass_layer(
+    let idx_yellow_grass = build_yellow_grass_layer(
         &mut terrain_model_builder,
         &terrain_sockets,
         &mut socket_collection,
     );
 
-    build_water_layer(
+    let idx_water = build_water_layer(
         &mut terrain_model_builder,
         &terrain_sockets,
         &mut socket_collection,
@@ -43,16 +51,25 @@ pub(crate) fn build_world() -> (
         &mut socket_collection,
     );
 
+    let model_indices = TerrainModelIndices {
+        dirt: idx_dirt,
+        green_grass: idx_green_grass,
+        yellow_grass: idx_yellow_grass,
+        water: idx_water,
+    };
+
     let (assets, models) = terrain_model_builder.into_parts();
 
-    (assets, models, socket_collection)
+    (assets, models, socket_collection, model_indices)
 }
 
 fn build_dirt_layer(
     terrain_model_builder: &mut TerrainModelBuilder,
     terrain_sockets: &TerrainSockets,
     socket_collection: &mut SocketCollection,
-) {
+) -> usize {
+    let idx = terrain_model_builder.next_index();
+
     terrain_model_builder
         .create_model(
             SocketsCartesian3D::Simple {
@@ -71,13 +88,15 @@ fn build_dirt_layer(
         terrain_sockets.dirt.material,
         vec![terrain_sockets.dirt.material],
     )]);
+
+    idx
 }
 
 fn build_grass_layer(
     terrain_model_builder: &mut TerrainModelBuilder,
     terrain_sockets: &TerrainSockets,
     socket_collection: &mut SocketCollection,
-) {
+) -> usize {
     terrain_model_builder.create_model(
         SocketsCartesian3D::Simple {
             x_pos: terrain_sockets.void,
@@ -90,6 +109,7 @@ fn build_grass_layer(
         Vec::new(),
     );
 
+    let idx_green_grass = terrain_model_builder.next_index();
     terrain_model_builder
         .create_model(
             SocketsCartesian3D::Multiple {
@@ -203,13 +223,15 @@ fn build_grass_layer(
             vec![terrain_sockets.grass.grass_and_void],
         ),
     ]);
+
+    idx_green_grass
 }
 
 fn build_yellow_grass_layer(
     terrain_model_builder: &mut TerrainModelBuilder,
     terrain_sockets: &TerrainSockets,
     socket_collection: &mut SocketCollection,
-) {
+) -> usize {
     terrain_model_builder.create_model(
         SocketsCartesian3D::Simple {
             x_pos: terrain_sockets.void,
@@ -222,6 +244,7 @@ fn build_yellow_grass_layer(
         Vec::new(),
     );
 
+    let idx_yellow_grass = terrain_model_builder.next_index();
     terrain_model_builder
         .create_model(
             SocketsCartesian3D::Simple {
@@ -326,13 +349,15 @@ fn build_yellow_grass_layer(
             terrain_sockets.yellow_grass.yellow_grass_fill_down,
             vec![terrain_sockets.grass.grass_fill_up],
         );
+
+    idx_yellow_grass
 }
 
 pub(crate) fn build_water_layer(
     terrain_model_builder: &mut TerrainModelBuilder,
     terrain_sockets: &TerrainSockets,
     socket_collection: &mut SocketCollection,
-) {
+) -> usize {
     terrain_model_builder.create_model(
         SocketsCartesian3D::Multiple {
             x_pos: vec![terrain_sockets.void],
@@ -349,6 +374,8 @@ pub(crate) fn build_water_layer(
     );
 
     const WATER_WEIGHT: f32 = 0.01;
+
+    let idx_water = terrain_model_builder.next_index();
     terrain_model_builder
         .create_model(
             SocketsCartesian3D::Simple {
@@ -462,6 +489,8 @@ pub(crate) fn build_water_layer(
         terrain_sockets.yellow_grass.layer_up,
         vec![terrain_sockets.water.layer_down],
     );
+
+    idx_water
 }
 
 pub(crate) fn build_props_layer(
@@ -577,18 +606,9 @@ pub(crate) fn build_props_layer(
         )
         .with_weight(PROPS_WEIGHT);
 
-    terrain_model_builder.create_model(
-        stump_prop.clone(),
-        vec![SpawnableAsset::new("tree_stump_1")],
-    );
-    terrain_model_builder.create_model(
-        stump_prop.clone(),
-        vec![SpawnableAsset::new("tree_stump_2")],
-    );
-    terrain_model_builder.create_model(
-        stump_prop.clone(),
-        vec![SpawnableAsset::new("tree_stump_3")],
-    );
+    terrain_model_builder.create_model(stump_prop.clone(), vec![SpawnableAsset::new("tree_stump_1")]);
+    terrain_model_builder.create_model(stump_prop.clone(), vec![SpawnableAsset::new("tree_stump_2")]);
+    terrain_model_builder.create_model(stump_prop.clone(), vec![SpawnableAsset::new("tree_stump_3")]);
 
     terrain_model_builder.create_model(rock_prop.clone(), vec![SpawnableAsset::new("rock_1")]);
     terrain_model_builder.create_model(rock_prop.clone(), vec![SpawnableAsset::new("rock_2")]);

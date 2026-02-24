@@ -13,7 +13,9 @@ impl TerrainModelBuilder {
             assets: Vec::new(),
         }
     }
-
+    pub(crate) fn next_index(&self) -> usize {
+        self.assets.len()
+    }
 
     pub(crate) fn create_model<T>(
         &mut self,

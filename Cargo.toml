@@ -7,6 +7,7 @@ edition = "2024"
 glam = "0.31.0"
 bevy = "0.18.0"
 bevy_procedural_tilemaps = "0.2.0"
+noise = "0.9"
 
 [profile.dev]
 opt-level = 1
