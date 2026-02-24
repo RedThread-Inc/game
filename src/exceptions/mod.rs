@@ -1,8 +1,7 @@
 use bevy::prelude::In;
-use strum_macros::EnumIter;
 
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, EnumIter, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub(crate) enum RTGException {
     // PLAYER SECTION
     RTG_PLAYER_FAILED_TO_SPAWN,
