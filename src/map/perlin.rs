@@ -4,6 +4,7 @@ pub const DEBUG_SEED: u32 = 42;
 
 const WATER_COVERAGE: f64 = 0.12;
 const DIRT_BAND: f64 = 0.07;
+const WATER_DIRT_RADIUS: i32 = 2;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TerrainZone {
@@ -15,6 +16,7 @@ pub enum TerrainZone {
 
 pub struct HeightMap {
     values: Vec<f64>,
+    zones: Vec<TerrainZone>,
     pub width: u32,
     pub height: u32,
     water_threshold: f64,
@@ -38,10 +40,10 @@ impl HeightMap {
                 let nx = x as f64 / width as f64;
                 let ny = y as f64 / height as f64;
 
-                let v = p0.get([nx * base_scale,        ny * base_scale       ]) * 0.60
-                    + p1.get([nx * base_scale * 2.5,  ny * base_scale * 2.5 ]) * 0.25
-                    + p2.get([nx * base_scale * 5.0,  ny * base_scale * 5.0 ]) * 0.12
-                    + p3.get([nx * base_scale * 10.0, ny * base_scale * 10.0]) * 0.03;
+                let v = p0.get([nx * base_scale,         ny * base_scale        ]) * 0.60
+                    + p1.get([nx * base_scale * 2.5,   ny * base_scale * 2.5  ]) * 0.25
+                    + p2.get([nx * base_scale * 5.0,   ny * base_scale * 5.0  ]) * 0.12
+                    + p3.get([nx * base_scale * 10.0,  ny * base_scale * 10.0 ]) * 0.03;
 
                 raw_values.push(((v + 1.0) / 2.0).clamp(0.0, 1.0));
             }
@@ -56,8 +58,16 @@ impl HeightMap {
             water_threshold, dirt_threshold
         );
 
+        let mut zones: Vec<TerrainZone> = smoothed
+            .iter()
+            .map(|&v| classify_value(v, water_threshold, dirt_threshold))
+            .collect();
+
+        apply_water_border(&mut zones, width, height, WATER_DIRT_RADIUS);
+
         Self {
             values: smoothed,
+            zones,
             width,
             height,
             water_threshold,
@@ -70,13 +80,44 @@ impl HeightMap {
     }
 
     pub fn classify(&self, x: u32, y: u32) -> TerrainZone {
-        let v = self.get(x, y);
-        if v < self.water_threshold {
-            TerrainZone::Water
-        } else if v < self.dirt_threshold {
-            TerrainZone::Dirt
-        } else {
-            TerrainZone::GreenGrass
+        self.zones[(y * self.width + x) as usize]
+    }
+}
+
+fn classify_value(v: f64, water_threshold: f64, dirt_threshold: f64) -> TerrainZone {
+    if v < water_threshold {
+        TerrainZone::Water
+    } else if v < dirt_threshold {
+        TerrainZone::Dirt
+    } else {
+        TerrainZone::GreenGrass
+    }
+}
+
+fn apply_water_border(zones: &mut Vec<TerrainZone>, width: u32, height: u32, radius: i32) {
+    let w = width as i32;
+    let h = height as i32;
+
+    let water_positions: Vec<(i32, i32)> = zones
+        .iter()
+        .enumerate()
+        .filter(|(_, z)| **z == TerrainZone::Water)
+        .map(|(i, _)| ((i as i32) % w, (i as i32) / w))
+        .collect();
+
+    for (wx, wy) in water_positions {
+        for dy in -radius..=radius {
+            for dx in -radius..=radius {
+                let nx = wx + dx;
+                let ny = wy + dy;
+                if nx < 0 || nx >= w || ny < 0 || ny >= h {
+                    continue;
+                }
+                let idx = (ny * w + nx) as usize;
+                if zones[idx] != TerrainZone::Water {
+                    zones[idx] = TerrainZone::Dirt;
+                }
+            }
         }
     }
 }
