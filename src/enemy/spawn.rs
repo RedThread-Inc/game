@@ -1,7 +1,6 @@
 use crate::enemy::animate::atlas_index_for;
 use crate::enemy::*;
 use bevy::prelude::*;
-use crate::player::Player;
 
 pub(crate) fn spawn_enemies(
     mut commands: Commands,

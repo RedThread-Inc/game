@@ -1,4 +1,3 @@
-use crate::enemy::movement::move_enemy_towards_player_system;
 use crate::enemy::plugin::EnemyPlugin;
 use crate::player::plugin::PlayerPlugin;
 use crate::interface::plugin::InterfacePlugin;

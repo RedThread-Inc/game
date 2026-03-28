@@ -9,6 +9,7 @@ pub(crate) enum RTGException {
     RTG_PLAYER_ANIMATION_CANT_LOAD,
     RTG_PLAYER_ANIMATION_TEXTURE_ATLAS_CANT_LOAD,
     RTG_PLAYER_MOVEMENT_DELTA_TIME_INVALID,
+    RTG_PLAYER_FIGHT_CANT_LOAD_PLAYER,
 
     // ENEMY SECTION
     RTG_ENEMY_ANIMATION_TEXTURE_ATLAS_CANT_LOAD,
@@ -44,6 +45,9 @@ impl RTGException {
             }
             RTGException::RTG_PLAYER_MOVEMENT_DELTA_TIME_INVALID => {
                 format!("[ERROR][{target}] Player movement delta time is invalid.")
+            }
+            RTGException::RTG_PLAYER_FIGHT_CANT_LOAD_PLAYER => {
+                format!("[ERROR][{target}] Fighting system can't load player")
             }
 
             // ENEMY SECTION
