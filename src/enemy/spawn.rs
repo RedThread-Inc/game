@@ -1,6 +1,7 @@
 use crate::enemy::animate::atlas_index_for;
 use crate::enemy::*;
 use bevy::prelude::*;
+use crate::InGameEntity;
 use crate::player::Player;
 
 pub(crate) fn spawn_enemies(
@@ -42,5 +43,6 @@ pub(crate) fn spawn_enemies(
             was_moving: false,
         },
         AnimationTimer(Timer::from_seconds(ANIM_DT, TimerMode::Repeating)),
+        InGameEntity,
     ));
 }

@@ -1,4 +1,4 @@
-use bevy::prelude::States;
+use bevy::prelude::*;
 
 mod core;
 mod enemy;
@@ -14,9 +14,23 @@ fn main() {
     engine::init_app();
 }
 
+#[derive(Component)]
+pub struct InGameEntity;
+
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub enum GameState {
     #[default]
     MainMenu,
     InGame,
+    Restarting,
+    GameOver,
+}
+
+#[derive(SubStates, Debug, Clone, PartialEq, Eq, Hash, Default)]
+#[source(GameState = GameState::InGame)]
+pub enum InGameState {
+    #[default]
+    Playing,
+    Paused,
+    Restarting,
 }

@@ -1,8 +1,8 @@
 use crate::enemy::plugin::EnemyPlugin;
 use crate::player::plugin::PlayerPlugin;
 use crate::interface::plugin::InterfacePlugin;
-use crate::menu::plugin::MenuPlugin;
-use crate::GameState;
+use crate::menu::main_menu::MainMenuPlugin;
+use crate::{GameState, InGameEntity, InGameState};
 use bevy::{
     prelude::*,
     window::{Window, WindowPlugin, WindowResolution},
@@ -10,6 +10,16 @@ use bevy::{
 use bevy::window::{PrimaryWindow, WindowMode};
 use bevy_procedural_tilemaps::prelude::*;
 use crate::map::generate::{map_pixel_dimensions, setup_generator, TILE_SIZE};
+use crate::menu::pause_menu::PauseMenuPlugin;
+use crate::menu::death_menu::DeathMenuPlugin;
+
+pub(crate) fn cleanup_game(mut commands: Commands, query: Query<Entity, With<InGameEntity>>) {
+    for entity in &query {
+        commands.entity(entity).despawn_related::<Children>();
+        commands.entity(entity).despawn();
+    }
+
+}
 
 pub(crate) fn init_app() {
 
@@ -19,7 +29,7 @@ pub(crate) fn init_app() {
     let map_size = map_pixel_dimensions(grid_x, grid_y);
 
     App::new()
-        .insert_resource(ClearColor(Color::WHITE))
+        .insert_resource(ClearColor(Color::srgb(0.847, 0.769, 0.588)))
         .add_plugins(
             DefaultPlugins
                 .set(AssetPlugin {
@@ -38,7 +48,8 @@ pub(crate) fn init_app() {
                 .set(ImagePlugin::default_nearest()),
         )
         .init_state::<GameState>()
-        .add_plugins((PlayerPlugin, EnemyPlugin, InterfacePlugin, MenuPlugin))
+        .add_sub_state::<InGameState>()
+        .add_plugins((PlayerPlugin, EnemyPlugin, InterfacePlugin, MainMenuPlugin, PauseMenuPlugin, DeathMenuPlugin))
         .add_plugins(ProcGenSimplePlugin::<Cartesian3D, Sprite>::default())
         .add_systems(Startup, setup_camera)
         .add_systems(Startup, |windows: Query<&Window, With<PrimaryWindow>>| {
@@ -50,6 +61,13 @@ pub(crate) fn init_app() {
             },
         )
         .add_systems(OnEnter(GameState::InGame), setup_generator)
+        .add_systems(OnExit(GameState::InGame), cleanup_game)
+        .add_systems(OnEnter(GameState::Restarting), cleanup_game)
+        .add_systems(OnEnter(GameState::Restarting),
+                     |mut next: ResMut<NextState<GameState>>| {
+                         next.set(GameState::InGame);
+                     }
+        )
         .run();
 }
 

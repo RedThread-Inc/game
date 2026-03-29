@@ -3,9 +3,9 @@ use bevy::prelude::*;
 use crate::GameState;
 use bevy::app::AppExit;
 
-pub struct MenuPlugin;
+pub struct MainMenuPlugin;
 
-impl Plugin for MenuPlugin {
+impl Plugin for MainMenuPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_systems(OnEnter(GameState::MainMenu), setup_menu)
