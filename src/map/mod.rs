@@ -1,8 +1,6 @@
 mod assets;
 mod tilemap;
-mod models;
-mod sockets;
-mod rules;
 mod perlin;
+mod props;
 pub(crate) mod generate;
 

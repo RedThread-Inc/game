@@ -1,9 +1,6 @@
 use noise::{NoiseFn, Perlin};
-
-pub const DEBUG_SEED: u32 = 42;
-
 const WATER_COVERAGE: f64 = 0.12;
-const DIRT_BAND: f64 = 0.07;
+const DIRT_BAND: f64 = 0.1;
 const WATER_DIRT_RADIUS: i32 = 2;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -11,7 +8,6 @@ pub enum TerrainZone {
     Water,
     Dirt,
     GreenGrass,
-    YellowGrass,
 }
 
 pub struct HeightMap {
