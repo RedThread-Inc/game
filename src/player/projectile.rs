@@ -1,3 +1,4 @@
+use crate::audio::{maybe_play, SoundCooldowns};
 use crate::enemy::Enemy;
 use crate::exceptions::RTGException;
 use crate::player::Player;
@@ -69,7 +70,7 @@ pub(crate) fn shoot_projectile_system(
     let total = 1 + upgrades.extra_projectiles;
     let spread = SPREAD_ANGLE.to_radians();
 
-    commands.spawn(AudioPlayer::new(asset_server.load("player_attack.ogg")));
+    maybe_play(&mut commands, &asset_server, "player_attack.ogg", 0.85);
 
     for i in 0..total {
         let angle_offset = if total == 1 {
@@ -114,6 +115,7 @@ pub(crate) fn move_projectiles_system(
     mut projectile_query: Query<(Entity, &mut Transform, &Projectile)>,
     mut enemy_query: Query<(Entity, &Transform, &mut Enemy), Without<Projectile>>,
     asset_server: Res<AssetServer>,
+    mut sound_cooldowns: ResMut<SoundCooldowns>,
 ) -> Result<(), RTGException> {
     for (proj_entity, mut proj_transform, projectile) in projectile_query.iter_mut() {
         let delta = projectile.direction * projectile.speed * time.delta_secs();
@@ -129,9 +131,12 @@ pub(crate) fn move_projectiles_system(
             if distance <= projectile.radius + 32.0 {
                 enemy.health -= projectile.damage;
                 commands.entity(proj_entity).despawn();
-                commands.spawn(AudioPlayer::new(
-                    asset_server.load("squelette_triso_damage.ogg"),
-                ));
+
+                if sound_cooldowns.enemy_hit.is_finished() {
+                    if maybe_play(&mut commands, &asset_server, "squelette_triso_damage.ogg", 0.70) {
+                        sound_cooldowns.enemy_hit.reset();
+                    }
+                }
                 break;
             }
         }

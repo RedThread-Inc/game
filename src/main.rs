@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+mod audio;
 mod core;
 mod enemy;
 mod engine;

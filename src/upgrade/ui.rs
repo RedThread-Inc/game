@@ -59,13 +59,13 @@ pub(crate) fn spawn_upgrade_ui(mut commands: Commands, round: Res<RoundState>) {
             ))
             .with_children(|panel| {
                 panel.spawn((
-                    Text::new(format!("Vague {} terminée !", round.current)),
+                    Text::new(format!("Vague {} terminee !", round.current)),
                     TextFont { font_size: 40.0, ..default() },
                     TextColor(INK),
                 ));
 
                 panel.spawn((
-                    Text::new("Choisis une amélioration :"),
+                    Text::new("Choisis une amelioration :"),
                     TextFont { font_size: 20.0, ..default() },
                     TextColor(INK),
                 ));

@@ -15,19 +15,19 @@ pub(crate) enum Upgrade {
 impl Upgrade {
     pub(crate) fn name(self) -> &'static str {
         match self {
-            Upgrade::ExtraProjectile  => "Boule de feu supplémentaire",
+            Upgrade::ExtraProjectile  => "Boule de feu supplementaire",
             Upgrade::FasterFireRate   => "Cadence de tir +25%",
-            Upgrade::MoreDamage       => "Dégâts +50%",
+            Upgrade::MoreDamage       => "Degats +50%",
             Upgrade::FasterProjectile => "Projectiles plus rapides",
-            Upgrade::LargerRadius     => "Zone d'impact élargie",
+            Upgrade::LargerRadius     => "Zone d'impact elargie",
         }
     }
 
     pub(crate) fn description(self) -> &'static str {
         match self {
-            Upgrade::ExtraProjectile  => "Lance une boule de feu supplémentaire à chaque tir",
-            Upgrade::FasterFireRate   => "Réduit le délai entre chaque tir de 25%",
-            Upgrade::MoreDamage       => "Augmente les dégâts de chaque projectile de 50%",
+            Upgrade::ExtraProjectile  => "Lance une boule de feu supplementaire a chaque tir",
+            Upgrade::FasterFireRate   => "Reduit le delai entre chaque tir de 25%",
+            Upgrade::MoreDamage       => "Augmente les degats de chaque projectile de 50%",
             Upgrade::FasterProjectile => "Les projectiles voyagent 50% plus vite",
             Upgrade::LargerRadius     => "Les projectiles ont une hitbox plus grande",
         }

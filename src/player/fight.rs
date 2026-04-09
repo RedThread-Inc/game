@@ -1,3 +1,4 @@
+use crate::audio::maybe_play;
 use crate::enemy::Enemy;
 use crate::exceptions::RTGException;
 use crate::player::Player;
@@ -45,7 +46,7 @@ pub(crate) fn player_fight_system(
             } else {
                 "player_damage_2.ogg"
             };
-            commands.spawn(AudioPlayer::new(asset_server.load(sound)));
+            maybe_play(&mut commands, &asset_server, sound, 0.80);
         }
 
         if player.attack_cooldown.is_finished() {
