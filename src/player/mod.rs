@@ -2,6 +2,8 @@ pub(crate) mod animate;
 pub(crate) mod movement;
 pub(crate) mod plugin;
 pub(crate) mod spawn;
+pub(crate) mod fight;
+pub(crate) mod projectile;
 
 use bevy::prelude::{Component, Deref, DerefMut, Timer};
 
@@ -32,5 +34,7 @@ pub(crate) struct AnimationState {
 #[derive(Component, Clone)]
 pub(crate) struct Player {
     pub(crate) health: f32,
+    pub(crate) damage: f32,
     pub(crate) damage_cooldown: Timer,
+    pub(crate) attack_cooldown: Timer,
 }

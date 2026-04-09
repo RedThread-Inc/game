@@ -2,6 +2,7 @@ pub(crate) mod animate;
 pub(crate) mod movement;
 pub(crate) mod plugin;
 pub(crate) mod spawn;
+pub(crate) mod death;
 
 use bevy::prelude::*;
 

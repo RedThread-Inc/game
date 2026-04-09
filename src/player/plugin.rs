@@ -1,5 +1,6 @@
 use crate::player::animate::animate_player_system;
 use crate::player::movement::move_player_system;
+use crate::player::projectile::{attach_fire_cooldown, move_projectiles_system, shoot_projectile_system};
 use crate::player::spawn::spawn_player_system;
 use bevy::prelude::*;
 use crate::{GameState, InGameState};
@@ -22,16 +23,17 @@ pub fn check_player_death_system(
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_systems(OnEnter(GameState::InGame), spawn_player_system.pipe(log_rtg_exception))
-            .add_systems(
-                Update,
-                (
-                    move_player_system.pipe(log_rtg_exception),
-                    animate_player_system.pipe(log_rtg_exception),
-                    check_player_death_system,
-                )
-                    .run_if(in_state(GameState::InGame))
-                    .run_if(in_state(InGameState::Playing)),
-            );
+            .add_systems(OnEnter(GameState::InGame), (
+                spawn_player_system.pipe(log_rtg_exception),
+                attach_fire_cooldown,
+            ).chain())
+            .add_systems(Update, (
+                move_player_system.pipe(log_rtg_exception),
+                animate_player_system.pipe(log_rtg_exception),
+                check_player_death_system,
+                shoot_projectile_system.pipe(log_rtg_exception),
+                move_projectiles_system.pipe(log_rtg_exception),
+            ).run_if(in_state(GameState::InGame))
+                .run_if(in_state(InGameState::Playing)));
     }
 }
