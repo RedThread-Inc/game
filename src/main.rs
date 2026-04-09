@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+mod audio;
 mod core;
 mod enemy;
 mod engine;
@@ -9,6 +10,8 @@ mod fight;
 mod interface;
 mod exceptions;
 mod menu;
+mod round;
+mod upgrade;
 
 fn main() {
     engine::init_app();
@@ -33,4 +36,5 @@ pub enum InGameState {
     Playing,
     Paused,
     Restarting,
+    ChoosingUpgrade,
 }

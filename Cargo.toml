@@ -7,6 +7,7 @@ edition = "2024"
 glam = "0.31.0"
 bevy = { version = "0.18", default-features = true, features = ["vorbis"] }
 bevy_procedural_tilemaps = "0.2.0"
+rand = "0.9"
 
 [profile.dev]
 opt-level = 1
