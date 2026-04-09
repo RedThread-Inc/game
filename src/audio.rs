@@ -15,8 +15,8 @@ impl Default for SoundCooldowns {
     }
 }
 
-/// Joue un son avec une probabilité `chance` (0.0–1.0).
-/// Retourne `true` si le son a été déclenché.
+/// Plays a sound with a probability `chance` (0.0–1.0).
+/// Returns `true` if the sound was triggered.
 pub(crate) fn maybe_play(
     commands: &mut Commands,
     asset_server: &AssetServer,
@@ -24,7 +24,13 @@ pub(crate) fn maybe_play(
     chance: f32,
 ) -> bool {
     if rand::rng().random::<f32>() < chance {
-        commands.spawn(AudioPlayer::new(asset_server.load(path)));
+        commands.spawn((
+            AudioPlayer::new(asset_server.load(path)),
+            PlaybackSettings {
+                volume: bevy::audio::Volume::Linear(0.05),
+                ..default()
+            },
+        ));
         return true;
     }
     false
