@@ -1,7 +1,8 @@
-use crate::enemy::movement::move_enemy_towards_player_system;
 use crate::enemy::plugin::EnemyPlugin;
 use crate::player::plugin::PlayerPlugin;
 use crate::interface::plugin::InterfacePlugin;
+use crate::menu::plugin::MenuPlugin;
+use crate::GameState;
 use bevy::{
     prelude::*,
     window::{Window, WindowPlugin, WindowResolution},
@@ -36,16 +37,19 @@ pub(crate) fn init_app() {
                 })
                 .set(ImagePlugin::default_nearest()),
         )
-        .add_plugins((PlayerPlugin, EnemyPlugin, InterfacePlugin))
-        .add_systems(Startup, |windows: Query<&Window, With<PrimaryWindow>>| {
-            let window = windows.single().expect("Primary window must exist");
-            let grid_x = (window.width() / TILE_SIZE).floor() as u32;
-            let grid_y = (window.height() / TILE_SIZE).floor() as u32;
-            let map_size = map_pixel_dimensions(grid_x, grid_y);
-            println!("Map size: {:?}", map_size);
-        })
+        .init_state::<GameState>()
+        .add_plugins((PlayerPlugin, EnemyPlugin, InterfacePlugin, MenuPlugin))
         .add_plugins(ProcGenSimplePlugin::<Cartesian3D, Sprite>::default())
-        .add_systems(Startup, (setup_camera, setup_generator))
+        .add_systems(Startup, setup_camera)
+        .add_systems(Startup, |windows: Query<&Window, With<PrimaryWindow>>| {
+                let window = windows.single().expect("Primary window must exist");
+                let grid_x = (window.width() / TILE_SIZE).floor() as u32;
+                let grid_y = (window.height() / TILE_SIZE).floor() as u32;
+                let map_size = map_pixel_dimensions(grid_x, grid_y);
+                println!("Map size: {:?}", map_size);
+            },
+        )
+        .add_systems(OnEnter(GameState::InGame), setup_generator)
         .run();
 }
 
