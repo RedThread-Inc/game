@@ -10,7 +10,7 @@ use bevy::{
     prelude::*,
     window::{Window, WindowPlugin, WindowResolution},
 };
-use bevy::window::{PrimaryWindow, WindowMode};
+use bevy::window::{WindowMode};
 use bevy_procedural_tilemaps::prelude::*;
 use crate::map::generate::{map_pixel_dimensions, setup_generator, TILE_SIZE};
 use crate::menu::pause_menu::PauseMenuPlugin;
@@ -25,12 +25,6 @@ pub(crate) fn cleanup_game(mut commands: Commands, query: Query<Entity, With<InG
 }
 
 pub(crate) fn init_app() {
-
-    //Initialize windows with 0px but it's evaluated after in setup generator function
-    let grid_x = 0;
-    let grid_y = 0;
-    let map_size = map_pixel_dimensions(grid_x, grid_y);
-
     App::new()
         .insert_resource(ClearColor(Color::srgb(0.847, 0.769, 0.588)))
         .add_plugins(
@@ -41,9 +35,9 @@ pub(crate) fn init_app() {
                 })
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        resolution: WindowResolution::new(map_size.x as u32, map_size.y as u32),
-                        resizable: false,
-                        mode: WindowMode::Fullscreen(MonitorSelection::Primary, VideoModeSelection::Current),
+                        resolution: WindowResolution::new(1920, 1080),
+                        resizable: true,
+                        mode: WindowMode::Windowed,
                         ..default()
                     }),
                     ..default()

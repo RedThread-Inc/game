@@ -1,9 +1,10 @@
-use bevy_procedural_tilemaps::prelude::*;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use crate::map::{
-    assets::{load_assets, prepare_tilemap_handles},
-    rules::build_world,
+    assets::{prepare_tilemap_handles, TilemapHandles},
+    perlin::{HeightMap, TerrainZone},
+    props::spawn_all_props,
+    tilemap::TILEMAP,
 };
 use crate::exceptions::RTGException;
 use crate::InGameEntity;
@@ -11,12 +12,27 @@ use crate::InGameEntity;
 const ASSETS_PATH: &str = "tile_layers";
 const TILEMAP_FILE: &str = "tilemap.png";
 pub(crate) const TILE_SIZE: f32 = 32.;
-const NODE_SIZE: Vec3 = Vec3::new(TILE_SIZE, TILE_SIZE, 1.);
-const ASSETS_SCALE: Vec3 = Vec3::ONE;
-const GRID_Z: u32 = 5;
 
-pub(crate) fn map_pixel_dimensions(grid_x: u32, grid_y: u32) -> Vec2 {
-    Vec2::new(TILE_SIZE * grid_x as f32, TILE_SIZE * grid_y as f32)
+pub(crate) const DEBUG_SEED: u32 = 123456789;
+const PERLIN_SCALE: f64 = 0.2;
+
+#[derive(Resource)]
+pub struct TerrainHeightMap(pub HeightMap);
+
+fn terrain_priority(zone: TerrainZone) -> u8 {
+    match zone {
+        TerrainZone::Water       => 3,
+        TerrainZone::GreenGrass  => 2,
+        TerrainZone::Dirt        => 0,
+    }
+}
+
+fn zone_prefix(zone: TerrainZone) -> &'static str {
+    match zone {
+        TerrainZone::Water       => "water",
+        TerrainZone::Dirt        => "dirt",
+        TerrainZone::GreenGrass  => "green_grass",
+    }
 }
 
 pub(crate) fn setup_generator(
@@ -31,39 +47,70 @@ pub(crate) fn setup_generator(
     let grid_x = (window.clone().unwrap().width() / TILE_SIZE).floor() as u32;
     let grid_y = (window.unwrap().height() / TILE_SIZE).floor() as u32;
 
-    println!("Grid size: {} x {}", grid_x, grid_y);
-
-    let (assets_definitions, models, socket_collection) = build_world();
-
-    let rules = RulesBuilder::new_cartesian_3d(models, socket_collection)
-        .with_rotation_axis(Direction::ZForward)
-        .build()
-        .unwrap();
-
-    let grid = CartesianGrid::new_cartesian_3d(grid_x, grid_y, GRID_Z, false, false, false);
-
-    let gen_builder = GeneratorBuilder::new()
-        .with_rules(rules)
-        .with_grid(grid.clone())
-        .with_rng(RngMode::RandomSeed)
-        .with_node_heuristic(NodeSelectionHeuristic::MinimumRemainingValue)
-        .with_model_heuristic(ModelSelectionHeuristic::WeightedProbability);
-
-    let generator = gen_builder.build().unwrap();
-
-    let tilemap_handles =
+    let height_map = HeightMap::generate(grid_x, grid_y, DEBUG_SEED, PERLIN_SCALE);
+    let handles =
         prepare_tilemap_handles(&asset_server, &mut atlas_layouts, ASSETS_PATH, TILEMAP_FILE);
-    let models_assets = load_assets(&tilemap_handles, assets_definitions);
 
-    commands.spawn((
-        Transform::from_translation(Vec3 {
-            x: -TILE_SIZE * grid.size_x() as f32 / 2.0,
-            y: -TILE_SIZE * grid.size_y() as f32 / 2.0,
-            z: 0.0,
-        }),
-        grid,
-        generator,
-        NodesSpawner::new(models_assets, NODE_SIZE, ASSETS_SCALE).with_z_offset_from_y(true),
-        InGameEntity,
-    ));
+    let origin_x = -(TILE_SIZE * grid_x as f32) / 2.0;
+    let origin_y = -(TILE_SIZE * grid_y as f32) / 2.0;
+
+    for y in 0..grid_y {
+        for x in 0..grid_x {
+            let world_x = origin_x + x as f32 * TILE_SIZE + TILE_SIZE / 2.0;
+            let world_y = origin_y + y as f32 * TILE_SIZE + TILE_SIZE / 2.0;
+
+            let zone = height_map.classify(x, y);
+            let base_sprite_name = zone_prefix(zone);
+            let base_sprite_id = TILEMAP.sprite_index(base_sprite_name).unwrap_or_else(|| panic!("Unknown sprite: '{}'", base_sprite_name));
+            commands.spawn((handles.sprite(base_sprite_id), Transform::from_xyz(world_x, world_y, 0.0)));
+
+
+            spawn_transition(&mut commands, &handles, &height_map, grid_x, grid_y, x, y, world_x, world_y);
+        }
+    }
+
+    spawn_all_props(&mut commands, &handles, &height_map, grid_x, grid_y, origin_x, origin_y);
+
+    commands.insert_resource(TerrainHeightMap(height_map));
+}
+
+fn spawn_transition(commands: &mut Commands, handles: &TilemapHandles, height_map: &HeightMap, grid_x: u32, grid_y: u32, x: u32, y: u32, world_x: f32, world_y: f32) {
+
+    let center = height_map.classify(x, y);
+    let cp = terrain_priority(center);
+
+    let get_zone = |dx: i32, dy: i32| -> TerrainZone {
+        let nx = (x as i32 + dx).clamp(0, grid_x as i32 - 1) as u32;
+        let ny = (y as i32 + dy).clamp(0, grid_y as i32 - 1) as u32;
+        height_map.classify(nx, ny)
+    };
+
+    let prio = |dx: i32, dy: i32| -> u8 { terrain_priority(get_zone(dx, dy)) };
+
+    let mut spawn_edge = |sprite_name: String| {
+        if let Some(idx) = TILEMAP.sprite_index(&sprite_name) {
+            commands.spawn((
+                handles.sprite(idx),
+                Transform::from_xyz(world_x, world_y, 1.0),
+            ));
+        }
+    };
+
+    let (t, b, l, r) = (prio(0,1), prio(0,-1), prio(-1,0), prio(1,0));
+    let (tl, tr, bl, br) = (prio(-1,1), prio(1,1), prio(-1,-1), prio(1,-1));
+
+    if b > cp { spawn_edge(format!("{}_side_t", zone_prefix(get_zone(0, -1)))); }
+    if t > cp { spawn_edge(format!("{}_side_b", zone_prefix(get_zone(0, 1)))); }
+    if r > cp { spawn_edge(format!("{}_side_l", zone_prefix(get_zone(1, 0)))); }
+    if l > cp { spawn_edge(format!("{}_side_r", zone_prefix(get_zone(-1, 0)))); }
+
+    if b > cp && r > cp && b == r { spawn_edge(format!("{}_corner_in_br", zone_prefix(get_zone(0, -1)))); }
+    if b > cp && l > cp && b == l { spawn_edge(format!("{}_corner_in_bl", zone_prefix(get_zone(0, -1)))); }
+    if t > cp && r > cp && t == r { spawn_edge(format!("{}_corner_in_tr", zone_prefix(get_zone(0, 1)))); }
+    if t > cp && l > cp && t == l { spawn_edge(format!("{}_corner_in_tl", zone_prefix(get_zone(0, 1)))); }
+
+    if br > cp && b <= cp && r <= cp { spawn_edge(format!("{}_corner_out_tl", zone_prefix(get_zone(1, -1)))); }
+    if bl > cp && b <= cp && l <= cp { spawn_edge(format!("{}_corner_out_tr", zone_prefix(get_zone(-1, -1)))); }
+    if tr > cp && t <= cp && r <= cp { spawn_edge(format!("{}_corner_out_bl", zone_prefix(get_zone(1, 1)))); }
+    if tl > cp && t <= cp && l <= cp { spawn_edge(format!("{}_corner_out_br", zone_prefix(get_zone(-1, 1)))); }
 }

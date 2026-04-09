@@ -1,30 +1,5 @@
 use bevy::{prelude::*};
-use bevy_procedural_tilemaps::prelude::*;
 use crate::map::tilemap::TILEMAP;
-
-#[derive(Clone)]
-pub(crate) struct SpawnableAsset {
-    sprite_name: &'static str,
-    grid_offset: GridDelta,
-    offset: Vec3,
-    components_spawner: fn(&mut EntityCommands),
-}
-
-impl SpawnableAsset {
-    pub(crate) fn new(sprite_name: &'static str) -> Self {
-        Self {
-            sprite_name,
-            grid_offset: GridDelta::new(0, 0, 0),
-            offset: Vec3::ZERO,
-            components_spawner: |_| {},
-        }
-    }
-
-    pub(crate) fn with_grid_offset(mut self, offset: GridDelta) -> Self {
-        self.grid_offset = offset;
-        self
-    }
-}
 
 #[derive(Clone)]
 pub(crate) struct TilemapHandles {
@@ -55,36 +30,4 @@ pub(crate) fn prepare_tilemap_handles(
     let layout = atlas_layouts.add(layout);
 
     TilemapHandles { image, layout }
-}
-
-pub(crate) fn load_assets(
-    tilemap_handles: &TilemapHandles,
-    assets_definitions: Vec<Vec<SpawnableAsset>>,
-) -> ModelsAssets<Sprite> {
-    let mut models_assets = ModelsAssets::<Sprite>::new();
-    for (model_index, assets) in assets_definitions.into_iter().enumerate() {
-        for asset_def in assets {
-            let SpawnableAsset {
-                sprite_name,
-                grid_offset,
-                offset,
-                components_spawner,
-            } = asset_def;
-
-            let Some(atlas_index) = TILEMAP.sprite_index(sprite_name) else {
-                panic!("Unknown atlas sprite '{}'", sprite_name);
-            };
-
-            models_assets.add(
-                model_index,
-                ModelAsset {
-                    assets_bundle: tilemap_handles.sprite(atlas_index),
-                    grid_offset,
-                    world_offset: offset,
-                    spawn_commands: components_spawner,
-                },
-            )
-        }
-    }
-    models_assets
 }
