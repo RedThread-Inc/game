@@ -19,19 +19,19 @@ impl Plugin for MainMenuPlugin {
 
 fn start_menu_music(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
-        AudioPlayer::new(asset_server.load("music/menuMusic2.ogg")),
+        AudioPlayer::new(asset_server.load("music/mainMenuMusic.ogg")),
         PlaybackSettings {
             mode: bevy::audio::PlaybackMode::Loop,
             volume: bevy::audio::Volume::Linear(0.1),
             ..default()
         },
-        MenuMusic,
+        MainMenuMusic,
     ));
 }
 
 fn stop_menu_music(
     mut commands: Commands,
-    query: Query<Entity, With<MenuMusic>>,
+    query: Query<Entity, With<MainMenuMusic>>,
 ) {
     for entity in &query {
         commands.entity(entity).despawn();
@@ -45,7 +45,7 @@ enum MenuButton {
 }
 
 #[derive(Component)]
-struct MenuMusic;
+struct MainMenuMusic;
 
 #[derive(Component)]
 struct MenuRoot;
