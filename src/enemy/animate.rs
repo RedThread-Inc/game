@@ -11,7 +11,7 @@ pub(crate) fn animate_enemies(
     let atlas = sprite
         .texture_atlas
         .as_mut()
-        .ok_or(RTGException::RTG_ENEMY_ANIMATION_TEXTURE_ATLAS_MISSING)?;
+        .ok_or(RTGException::RTG_ENEMY_ANIMATION_TEXTURE_ATLAS_CANT_LOAD)?;
 
     let target_row = row_zero_based(anim.facing);
     let current_col = atlas.index % WALK_FRAMES;
@@ -38,20 +38,10 @@ pub(crate) fn animate_enemies_system(
     time: Res<Time>,
     mut query: Query<(&mut AnimationState, &mut AnimationTimer, &mut Sprite), With<Enemy>>,
 ) {
-    let (mut anim, mut timer, mut sprite) = match query.single_mut() {
-        Ok(v) => v,
-        Err(bevy::ecs::query::QuerySingleError::NoEntities(_)) => {
-            println!("[ERROR] - animate_enemies: no Enemy entity found");
-            return;
+    for (mut anim, mut timer, mut sprite) in query.iter_mut() {
+        if let Err(e) = animate_enemies(&time, &mut anim, &mut timer, &mut sprite) {
+            println!("{}", e.to_string());
         }
-        Err(bevy::ecs::query::QuerySingleError::MultipleEntities(_)) => {
-            println!("[ERROR] - animate_enemies: multiple Enemy entities found");
-            return;
-        }
-    };
-
-    if let Err(e) = animate_enemies(&time, &mut anim, &mut timer, &mut sprite) {
-        println!("[ERROR] - animate_enemies failed: {:?}", e);
     }
 }
 

@@ -48,9 +48,12 @@ pub(crate) fn move_player_system(
     input: Res<ButtonInput<KeyCode>>,
     time: Res<Time>,
     player: Single<(&mut Transform, &mut AnimationState), (With<Player>, Without<Enemy>)>,
-) {
+) -> Result<(), RTGException> {
      if let Err(e) = move_player(input, time, player) {
-         println!("[ERROR] - Player movement error: {:?}", e)
+         println!("{}", e.to_string());
+         return Err(e);
+     } else {
+         Ok(())
      }
 }
 

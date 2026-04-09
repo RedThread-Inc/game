@@ -6,6 +6,8 @@ use crate::map::{
     props::spawn_all_props,
     tilemap::TILEMAP,
 };
+use crate::exceptions::RTGException;
+use crate::InGameEntity;
 
 const ASSETS_PATH: &str = "tile_layers";
 const TILEMAP_FILE: &str = "tilemap.png";
@@ -40,11 +42,10 @@ pub(crate) fn setup_generator(
     windows: Query<&Window, With<PrimaryWindow>>,
 ) {
     let window = windows
-        .single()
-        .expect("Primary window must exist");
+        .single().map_err(|e| RTGException::REDTHREAD_FAILED_TO_GENERATE_MAP_MISSING_GAME_WINDOW);
 
-    let grid_x = (window.width() / TILE_SIZE).floor() as u32;
-    let grid_y = (window.height() / TILE_SIZE).floor() as u32;
+    let grid_x = (window.clone().unwrap().width() / TILE_SIZE).floor() as u32;
+    let grid_y = (window.unwrap().height() / TILE_SIZE).floor() as u32;
 
     let height_map = HeightMap::generate(grid_x, grid_y, DEBUG_SEED, PERLIN_SCALE);
     let handles =

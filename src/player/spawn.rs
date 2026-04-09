@@ -1,16 +1,27 @@
+use std::time::Duration;
 use crate::player::animate::atlas_index_for;
 use crate::player::*;
 use bevy::prelude::*;
 use crate::exceptions::RTGException;
+use crate::InGameEntity;
 
 fn spawn_player(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) -> Result<(), RTGException> {
+
+    let mut damage_cooldown = Timer::from_seconds(1.0, TimerMode::Once);
+    damage_cooldown.tick(Duration::from_secs_f32(1.0));
+
+    let mut attack_cooldown = Timer::from_seconds(0.5, TimerMode::Once);
+    attack_cooldown.tick(Duration::from_secs_f32(0.5));
+
     let player = Player {
         health: 100.0,
-        damage_cooldown: Timer::from_seconds(1.0, TimerMode::Once),
+        damage: 25.0,
+        damage_cooldown,
+        attack_cooldown,
     };
 
     let texture = asset_server.load("character-spritesheet.png");
@@ -41,6 +52,7 @@ fn spawn_player(
             was_moving: false,
         },
         AnimationTimer(Timer::from_seconds(ANIM_DT, TimerMode::Repeating)),
+        InGameEntity,
     ));
 
     Ok(())
@@ -50,8 +62,11 @@ pub(crate) fn spawn_player_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
-) {
+) -> Result<(), RTGException> {
     if let Err(e) = spawn_player(commands, asset_server, atlas_layouts) {
-        println!("[ERROR] - Spawn player error : {:?}", e)
+        println!("{}", e.to_string());
+        return Err(e);
+    } else {
+        Ok(())
     }
 }

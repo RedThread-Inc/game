@@ -48,16 +48,16 @@ pub(crate) fn move_enemy_towards_player_system(
     time: Res<Time>,
     player_query: Query<&Transform, With<Player>>,
     mut enemy_query: Query<(&mut Transform, &mut AnimationState), (With<Enemy>, Without<Player>)>,
-) {
+) -> Result<(), RTGException>{
     let player_transform = match player_query.single() {
         Ok(t) => t,
         Err(bevy::ecs::query::QuerySingleError::NoEntities(_)) => {
-            println!("[ERROR] - move_enemy_towards_player: no Player entity found");
-            return;
+            println!("{}", RTGException::RTG_ENEMY_MOVE_TOWARDS_PLAYER_NOT_FOUND.to_string());
+            return Err(RTGException::RTG_ENEMY_MOVE_TOWARDS_PLAYER_NOT_FOUND);
         }
         Err(bevy::ecs::query::QuerySingleError::MultipleEntities(_)) => {
-            println!("[ERROR] - move_enemy_towards_player: multiple Player entities found");
-            return;
+            println!("{}", RTGException::RTG_ENEMY_MOVE_TOWARDS_PLAYER_MULTIPLE_PLAYER_FOUND.to_string());
+            return Err(RTGException::RTG_ENEMY_MOVE_TOWARDS_PLAYER_MULTIPLE_PLAYER_FOUND);
         }
     };
 
@@ -65,9 +65,12 @@ pub(crate) fn move_enemy_towards_player_system(
         if let Err(e) =
             move_enemy_towards_player_enemy(&time, player_transform, &mut transform, &mut anim)
         {
-            println!("[ERROR] - enemy movement skipped: {:?}", e);
+            println!("{}", e.to_string());
+            return Err(e);
         }
     }
+
+    Ok(())
 }
 
 

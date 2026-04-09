@@ -18,7 +18,7 @@ pub(crate) fn enemy_hits_player_system(
     }
 
     for (enemy_transform, enemy) in enemy_query.iter() {
-        if (player_transform.translation.distance(enemy_transform.translation) < 28.0){
+        if player_transform.translation.distance(enemy_transform.translation) < 28.0 {
             player.health -= enemy.damage;
             player.damage_cooldown.reset();
             break;

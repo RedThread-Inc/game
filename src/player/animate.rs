@@ -57,9 +57,12 @@ pub(crate) fn animate_player(
 pub(crate) fn animate_player_system(
     time: Res<Time>,
     query: Query<(&mut AnimationState, &mut AnimationTimer, &mut Sprite), With<Player>>,
-) {
+) -> Result<(), RTGException>{
     if let Err(e) = animate_player(time, query) {
-        println!("[ERROR] - Animation error: {:?}", e);
+        println!("{}", e.to_string());
+        return Err(e);
+    } else {
+        Ok(())
     }
 }
 
