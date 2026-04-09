@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use crate::InGameEntity;
 use crate::player::Player;
 
 #[derive(Component)]
@@ -15,6 +16,7 @@ pub(crate) fn spawn_player_health_bar(mut commands: Commands) {
             ..default()
         },
         BackgroundColor(Color::srgb(0.7098039215686275, 0.7098039215686275, 0.7019607843137254)),
+        InGameEntity
     ))
         .with_children(|parent| {
             parent.spawn((

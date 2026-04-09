@@ -6,6 +6,7 @@ use crate::map::{
     rules::build_world,
 };
 use crate::exceptions::RTGException;
+use crate::InGameEntity;
 
 const ASSETS_PATH: &str = "tile_layers";
 const TILEMAP_FILE: &str = "tilemap.png";
@@ -63,5 +64,6 @@ pub(crate) fn setup_generator(
         grid,
         generator,
         NodesSpawner::new(models_assets, NODE_SIZE, ASSETS_SCALE).with_z_offset_from_y(true),
+        InGameEntity,
     ));
 }

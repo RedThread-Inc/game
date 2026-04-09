@@ -2,6 +2,7 @@ use crate::player::animate::atlas_index_for;
 use crate::player::*;
 use bevy::prelude::*;
 use crate::exceptions::RTGException;
+use crate::InGameEntity;
 
 fn spawn_player(
     mut commands: Commands,
@@ -41,6 +42,7 @@ fn spawn_player(
             was_moving: false,
         },
         AnimationTimer(Timer::from_seconds(ANIM_DT, TimerMode::Repeating)),
+        InGameEntity,
     ));
 
     Ok(())

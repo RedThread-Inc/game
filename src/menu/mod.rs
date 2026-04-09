@@ -1,1 +1,3 @@
-pub(crate) mod plugin;
+pub(crate) mod main_menu;
+pub(crate) mod pause_menu;
+pub(crate) mod death_menu;
