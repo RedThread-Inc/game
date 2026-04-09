@@ -1,17 +1,21 @@
 use crate::enemy::Enemy;
 use crate::exceptions::RTGException;
 use crate::player::Player;
+use crate::upgrade::PlayerUpgrades;
 use bevy::prelude::*;
 
 const PROJECTILE_SPEED: f32 = 300.0;
 const PROJECTILE_RADIUS: f32 = 8.0;
 const PROJECTILE_DAMAGE: f32 = 20.0;
 const FIRE_RATE: f32 = 1.0;
+const SPREAD_ANGLE: f32 = 20.0; // degrés entre chaque projectile
 
 #[derive(Component)]
 pub(crate) struct Projectile {
     pub(crate) direction: Vec2,
     pub(crate) damage: f32,
+    pub(crate) speed: f32,
+    pub(crate) radius: f32,
 }
 
 #[derive(Component)]
@@ -33,21 +37,18 @@ pub(crate) fn shoot_projectile_system(
     mut player_query: Query<(&Transform, &mut FireCooldown), With<Player>>,
     enemy_query: Query<&Transform, With<Enemy>>,
     asset_server: Res<AssetServer>,
+    upgrades: Res<PlayerUpgrades>,
 ) -> Result<(), RTGException> {
     let Ok((player_transform, mut cooldown)) = player_query.single_mut() else {
-        println!("DEBUG: player introuvable");
-        return Err(RTGException::RTG_PLAYER_ANIMATION_CANT_LOAD);
+        return Err(RTGException::RTG_PLAYER_FIGHT_CANT_LOAD_PLAYER);
     };
 
     cooldown.0.tick(time.delta());
-    println!("DEBUG: cooldown elapsed={:.2} finished={}", cooldown.0.elapsed_secs(), cooldown.0.is_finished());
-
     if !cooldown.0.is_finished() {
         return Ok(());
     }
 
     let player_pos = player_transform.translation.truncate();
-    println!("DEBUG: player_pos={:?}", player_pos);
 
     let closest = enemy_query
         .iter()
@@ -58,34 +59,52 @@ pub(crate) fn shoot_projectile_system(
                 .unwrap()
         });
 
-    let Some(enemy_pos) = closest else {
-        println!("DEBUG: aucun ennemi trouvé");
+    let Some(enemy_pos) = closest else { return Ok(()) };
+
+    let base_dir = (enemy_pos - player_pos).normalize_or_zero();
+    if base_dir == Vec2::ZERO {
         return Ok(());
-    };
+    }
 
-    println!("DEBUG: ennemi trouvé à {:?}, spawn projectile", enemy_pos);
+    let total = 1 + upgrades.extra_projectiles;
+    let spread = SPREAD_ANGLE.to_radians();
 
-    let direction = (enemy_pos - player_pos).normalize();
+    commands.spawn(AudioPlayer::new(asset_server.load("player_attack.ogg")));
 
-    commands.spawn((
-        Sprite {
-            image: asset_server.load("fireBall.png"),
-            custom_size:  Some(Vec2::splat(30.0)),
-            ..default()
-        },
-        Transform::from_translation(Vec3::new(
-            player_transform.translation.x,
-            player_transform.translation.y,
-            25.0,
-        )),
-        Projectile {
-            direction,
-            damage: PROJECTILE_DAMAGE,
-        },
-    ));
+    for i in 0..total {
+        let angle_offset = if total == 1 {
+            0.0
+        } else {
+            (i as f32 - (total as f32 - 1.0) / 2.0) * spread
+        };
+        let dir = rotate_vec2(base_dir, angle_offset);
 
+        commands.spawn((
+            Sprite {
+                image: asset_server.load("fireball.png"),
+                custom_size: Some(Vec2::splat(30.0)),
+                ..default()
+            },
+            Transform::from_translation(Vec3::new(
+                player_transform.translation.x,
+                player_transform.translation.y,
+                25.0,
+            )),
+            Projectile {
+                direction: dir,
+                damage: PROJECTILE_DAMAGE * upgrades.damage_multiplier,
+                speed: PROJECTILE_SPEED * upgrades.speed_multiplier,
+                radius: PROJECTILE_RADIUS + upgrades.radius_bonus,
+            },
+        ));
+    }
+
+    let new_duration = std::time::Duration::from_secs_f32(
+        (FIRE_RATE * upgrades.fire_rate_multiplier).max(0.1),
+    );
+    cooldown.0.set_duration(new_duration);
     cooldown.0.reset();
-    println!("DEBUG: projectile spawné !");
+
     Ok(())
 }
 
@@ -94,26 +113,34 @@ pub(crate) fn move_projectiles_system(
     time: Res<Time>,
     mut projectile_query: Query<(Entity, &mut Transform, &Projectile)>,
     mut enemy_query: Query<(Entity, &Transform, &mut Enemy), Without<Projectile>>,
+    asset_server: Res<AssetServer>,
 ) -> Result<(), RTGException> {
     for (proj_entity, mut proj_transform, projectile) in projectile_query.iter_mut() {
-        let delta = projectile.direction * PROJECTILE_SPEED * time.delta_secs();
+        let delta = projectile.direction * projectile.speed * time.delta_secs();
         proj_transform.translation.x += delta.x;
         proj_transform.translation.y += delta.y;
 
-        for (enemy_entity, enemy_transform, mut enemy) in enemy_query.iter_mut() {
+        for (_enemy_entity, enemy_transform, mut enemy) in enemy_query.iter_mut() {
             let distance = proj_transform
                 .translation
                 .truncate()
                 .distance(enemy_transform.translation.truncate());
 
-            if distance <= PROJECTILE_RADIUS + 32.0 {
+            if distance <= projectile.radius + 32.0 {
                 enemy.health -= projectile.damage;
-                println!("Ennemi touché ! HP restants: {}", enemy.health);
                 commands.entity(proj_entity).despawn();
+                commands.spawn(AudioPlayer::new(
+                    asset_server.load("squelette_triso_damage.ogg"),
+                ));
                 break;
             }
         }
     }
 
     Ok(())
+}
+
+fn rotate_vec2(v: Vec2, angle: f32) -> Vec2 {
+    let (sin, cos) = angle.sin_cos();
+    Vec2::new(v.x * cos - v.y * sin, v.x * sin + v.y * cos)
 }
