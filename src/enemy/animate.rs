@@ -37,25 +37,11 @@ pub(crate) fn animate_enemies(
 pub(crate) fn animate_enemies_system(
     time: Res<Time>,
     mut query: Query<(&mut AnimationState, &mut AnimationTimer, &mut Sprite), With<Enemy>>,
-) -> Result<(), RTGException> {
-    let (mut anim, mut timer, mut sprite) = match query.single_mut() {
-        Ok(v) => v,
-        Err(bevy::ecs::query::QuerySingleError::NoEntities(_)) => {
-            println!("{}", RTGException::RTG_ENEMY_IMPOSSIBLE_TO_ANIMATE_ENEMY_NOT_FOUND.to_string());
-            return Err(RTGException::RTG_ENEMY_IMPOSSIBLE_TO_ANIMATE_ENEMY_NOT_FOUND);
+) {
+    for (mut anim, mut timer, mut sprite) in query.iter_mut() {
+        if let Err(e) = animate_enemies(&time, &mut anim, &mut timer, &mut sprite) {
+            println!("{}", e.to_string());
         }
-        // TODO: Seems weird because we will have multiple enemies
-        Err(bevy::ecs::query::QuerySingleError::MultipleEntities(_)) => {
-            println!("{}", RTGException::RTG_ENEMY_IMPOSSIBLE_TO_ANIMATE_MULTIPLE_ENEMIES_FOUND.to_string());
-            return Err(RTGException::RTG_ENEMY_IMPOSSIBLE_TO_ANIMATE_MULTIPLE_ENEMIES_FOUND);
-        }
-    };
-
-    if let Err(e) = animate_enemies(&time, &mut anim, &mut timer, &mut sprite) {
-        println!("{}", e.to_string());
-        return Err(e);
-    } else {
-        return Ok(())
     }
 }
 

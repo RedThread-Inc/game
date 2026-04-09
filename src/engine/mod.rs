@@ -1,7 +1,10 @@
+use crate::audio::{tick_cooldowns, SoundCooldowns};
 use crate::enemy::plugin::EnemyPlugin;
 use crate::player::plugin::PlayerPlugin;
 use crate::interface::plugin::InterfacePlugin;
 use crate::menu::main_menu::MainMenuPlugin;
+use crate::round::plugin::RoundPlugin;
+use crate::upgrade::plugin::UpgradePlugin;
 use crate::{GameState, InGameEntity, InGameState};
 use bevy::{
     prelude::*,
@@ -49,7 +52,9 @@ pub(crate) fn init_app() {
         )
         .init_state::<GameState>()
         .add_sub_state::<InGameState>()
-        .add_plugins((PlayerPlugin, EnemyPlugin, InterfacePlugin, MainMenuPlugin, PauseMenuPlugin, DeathMenuPlugin))
+        .init_resource::<SoundCooldowns>()
+        .add_systems(Update, tick_cooldowns)
+        .add_plugins((PlayerPlugin, EnemyPlugin, InterfacePlugin, MainMenuPlugin, PauseMenuPlugin, DeathMenuPlugin, RoundPlugin, UpgradePlugin))
         .add_plugins(ProcGenSimplePlugin::<Cartesian3D, Sprite>::default())
         .add_systems(Startup, setup_camera)
         .add_systems(Startup, |windows: Query<&Window, With<PrimaryWindow>>| {

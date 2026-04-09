@@ -9,7 +9,7 @@ pub struct DeathMenuPlugin;
 impl Plugin for DeathMenuPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_systems(OnEnter(GameState::GameOver), setup_death_menu)
+            .add_systems(OnEnter(GameState::GameOver), (setup_death_menu, start_menu_music))
             .add_systems(Update, handle_death_buttons.run_if(in_state(GameState::GameOver)))
             .add_systems(OnExit(GameState::GameOver), cleanup_death_menu);
     }
@@ -21,6 +21,9 @@ enum DeathButton {
     MainMenu,
     Quit,
 }
+
+#[derive(Component)]
+struct DeathMenuMusic;
 
 #[derive(Component)]
 struct DeathRoot;
@@ -169,6 +172,27 @@ fn handle_death_buttons(
 pub(crate) fn cleanup_death_menu(
     mut commands: Commands,
     query: Query<Entity, With<DeathRoot>>,
+) {
+    for entity in &query {
+        commands.entity(entity).despawn();
+    }
+}
+
+fn start_menu_music(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn((
+        AudioPlayer::new(asset_server.load("music/deathMenuMusic.ogg")),
+        PlaybackSettings {
+            mode: bevy::audio::PlaybackMode::Loop,
+            volume: bevy::audio::Volume::Linear(0.3),
+            ..default()
+        },
+        crate::menu::death_menu::DeathMenuMusic,
+    ));
+}
+
+fn stop_menu_music(
+    mut commands: Commands,
+    query: Query<Entity, With<crate::menu::death_menu::DeathMenuMusic>>,
 ) {
     for entity in &query {
         commands.entity(entity).despawn();

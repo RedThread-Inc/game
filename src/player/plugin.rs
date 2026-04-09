@@ -1,4 +1,5 @@
 use crate::player::animate::animate_player_system;
+use crate::player::fight::{player_fight_system, PlayerDamageSoundState};
 use crate::player::movement::move_player_system;
 use crate::player::projectile::{attach_fire_cooldown, move_projectiles_system, shoot_projectile_system};
 use crate::player::spawn::spawn_player_system;
@@ -23,6 +24,7 @@ pub fn check_player_death_system(
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app
+            .init_resource::<PlayerDamageSoundState>()
             .add_systems(OnEnter(GameState::InGame), (
                 spawn_player_system.pipe(log_rtg_exception),
                 attach_fire_cooldown,
@@ -33,6 +35,7 @@ impl Plugin for PlayerPlugin {
                 check_player_death_system,
                 shoot_projectile_system.pipe(log_rtg_exception),
                 move_projectiles_system.pipe(log_rtg_exception),
+                player_fight_system.pipe(log_rtg_exception),
             ).run_if(in_state(GameState::InGame))
                 .run_if(in_state(InGameState::Playing)));
     }
