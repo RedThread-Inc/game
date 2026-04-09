@@ -8,12 +8,33 @@ pub struct MainMenuPlugin;
 impl Plugin for MainMenuPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_systems(OnEnter(GameState::MainMenu), setup_menu)
+            .add_systems(OnEnter(GameState::MainMenu), (setup_menu, start_menu_music))
             .add_systems(Update, (
                 handle_buttons,
                 animate_torches,
             ).run_if(in_state(GameState::MainMenu)))
-            .add_systems(OnExit(GameState::MainMenu), cleanup_menu);
+            .add_systems(OnExit(GameState::MainMenu), (cleanup_menu, stop_menu_music));
+    }
+}
+
+fn start_menu_music(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn((
+        AudioPlayer::new(asset_server.load("music/menuMusic2.ogg")),
+        PlaybackSettings {
+            mode: bevy::audio::PlaybackMode::Loop,
+            volume: bevy::audio::Volume::Linear(0.1),
+            ..default()
+        },
+        MenuMusic,
+    ));
+}
+
+fn stop_menu_music(
+    mut commands: Commands,
+    query: Query<Entity, With<MenuMusic>>,
+) {
+    for entity in &query {
+        commands.entity(entity).despawn();
     }
 }
 
@@ -22,6 +43,9 @@ enum MenuButton {
     Play,
     Quit,
 }
+
+#[derive(Component)]
+struct MenuMusic;
 
 #[derive(Component)]
 struct MenuRoot;
