@@ -10,9 +10,9 @@ use bevy::{
     prelude::*,
     window::{Window, WindowPlugin, WindowResolution},
 };
-use bevy::window::{WindowMode};
+use bevy::window::{PrimaryWindow, WindowMode};
 use bevy_procedural_tilemaps::prelude::*;
-use crate::map::generate::{map_pixel_dimensions, setup_generator, TILE_SIZE};
+use crate::map::generate::{setup_generator, TILE_SIZE};
 use crate::menu::pause_menu::PauseMenuPlugin;
 use crate::menu::death_menu::DeathMenuPlugin;
 
@@ -55,8 +55,6 @@ pub(crate) fn init_app() {
                 let window = windows.single().expect("Primary window must exist");
                 let grid_x = (window.width() / TILE_SIZE).floor() as u32;
                 let grid_y = (window.height() / TILE_SIZE).floor() as u32;
-                let map_size = map_pixel_dimensions(grid_x, grid_y);
-                println!("Map size: {:?}", map_size);
             },
         )
         .add_systems(OnEnter(GameState::InGame), setup_generator)
