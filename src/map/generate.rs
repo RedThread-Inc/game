@@ -11,7 +11,7 @@ const ASSETS_PATH: &str = "tile_layers";
 const TILEMAP_FILE: &str = "tilemap.png";
 pub(crate) const TILE_SIZE: f32 = 32.;
 
-pub(crate) const DEBUG_SEED: u32 = 128513;
+pub(crate) const DEBUG_SEED: u32 = 123456789;
 const PERLIN_SCALE: f64 = 0.2;
 
 #[derive(Resource)]
@@ -45,8 +45,6 @@ pub(crate) fn setup_generator(
 
     let grid_x = (window.width() / TILE_SIZE).floor() as u32;
     let grid_y = (window.height() / TILE_SIZE).floor() as u32;
-
-    println!("Grid size: {} x {}", grid_x, grid_y);
 
     let height_map = HeightMap::generate(grid_x, grid_y, DEBUG_SEED, PERLIN_SCALE);
     let handles =
@@ -100,19 +98,16 @@ fn spawn_transition(commands: &mut Commands, handles: &TilemapHandles, height_ma
     let (t, b, l, r) = (prio(0,1), prio(0,-1), prio(-1,0), prio(1,0));
     let (tl, tr, bl, br) = (prio(-1,1), prio(1,1), prio(-1,-1), prio(1,-1));
 
-    // 1. CARDINAL SIDES
     if b > cp { spawn_edge(format!("{}_side_t", zone_prefix(get_zone(0, -1)))); }
     if t > cp { spawn_edge(format!("{}_side_b", zone_prefix(get_zone(0, 1)))); }
     if r > cp { spawn_edge(format!("{}_side_l", zone_prefix(get_zone(1, 0)))); }
     if l > cp { spawn_edge(format!("{}_side_r", zone_prefix(get_zone(-1, 0)))); }
 
-    // 2. INNER CORNERS (Concave)
     if b > cp && r > cp && b == r { spawn_edge(format!("{}_corner_in_br", zone_prefix(get_zone(0, -1)))); }
     if b > cp && l > cp && b == l { spawn_edge(format!("{}_corner_in_bl", zone_prefix(get_zone(0, -1)))); }
     if t > cp && r > cp && t == r { spawn_edge(format!("{}_corner_in_tr", zone_prefix(get_zone(0, 1)))); }
     if t > cp && l > cp && t == l { spawn_edge(format!("{}_corner_in_tl", zone_prefix(get_zone(0, 1)))); }
 
-    // 3. OUTER CORNERS (Convex)
     if br > cp && b <= cp && r <= cp { spawn_edge(format!("{}_corner_out_tl", zone_prefix(get_zone(1, -1)))); }
     if bl > cp && b <= cp && l <= cp { spawn_edge(format!("{}_corner_out_tr", zone_prefix(get_zone(-1, -1)))); }
     if tr > cp && t <= cp && r <= cp { spawn_edge(format!("{}_corner_out_bl", zone_prefix(get_zone(1, 1)))); }

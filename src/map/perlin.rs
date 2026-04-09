@@ -3,6 +3,10 @@ const WATER_COVERAGE: f64 = 0.12;
 const DIRT_BAND: f64 = 0.1;
 const WATER_DIRT_RADIUS: i32 = 2;
 
+/// How many passes of isolated-tile removal to run.
+/// 2 passes handles both "1 tile alone" and "1 tile + 1 neighbour" clusters.
+const ISOLATION_PASSES: usize = 2;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TerrainZone {
     Water,
@@ -61,6 +65,10 @@ impl HeightMap {
 
         apply_water_border(&mut zones, width, height, WATER_DIRT_RADIUS);
 
+        for _ in 0..ISOLATION_PASSES {
+            remove_isolated_tiles(&mut zones, width, height);
+        }
+
         Self {
             values: smoothed,
             zones,
@@ -112,6 +120,62 @@ fn apply_water_border(zones: &mut Vec<TerrainZone>, width: u32, height: u32, rad
                 let idx = (ny * w + nx) as usize;
                 if zones[idx] != TerrainZone::Water {
                     zones[idx] = TerrainZone::Dirt;
+                }
+            }
+        }
+    }
+}
+fn remove_isolated_tiles(zones: &mut Vec<TerrainZone>, width: u32, height: u32) {
+    let w = width as i32;
+    let h = height as i32;
+
+    let snapshot = zones.clone();
+
+    let zone_priority = |z: TerrainZone| -> u8 {
+        match z {
+            TerrainZone::Water      => 3,
+            TerrainZone::GreenGrass => 2,
+            TerrainZone::Dirt       => 0,
+        }
+    };
+
+    for y in 0..h {
+        for x in 0..w {
+            let center = snapshot[(y * w + x) as usize];
+
+            let neighbours: Vec<TerrainZone> = [(-1i32, 0i32), (1, 0), (0, -1), (0, 1)]
+                .iter()
+                .filter_map(|&(dx, dy)| {
+                    let nx = x + dx;
+                    let ny = y + dy;
+                    if nx >= 0 && nx < w && ny >= 0 && ny < h {
+                        Some(snapshot[(ny * w + nx) as usize])
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            let same_count = neighbours.iter().filter(|&&z| z == center).count();
+
+            let is_isolated = same_count == 0;
+            let is_near_isolated = same_count == 1 && {
+                let dominant = neighbours.iter()
+                    .filter(|&&z| z != center)
+                    .copied()
+                    .next();
+                dominant.map_or(false, |d| {
+                    neighbours.iter().filter(|&&z| z != center).all(|&z| z == d)
+                })
+            };
+
+            if is_isolated || is_near_isolated {
+                if let Some(&replacement) = neighbours
+                    .iter()
+                    .filter(|&&z| z != center)
+                    .max_by_key(|&&z| zone_priority(z))
+                {
+                    zones[(y * w + x) as usize] = replacement;
                 }
             }
         }
