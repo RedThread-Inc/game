@@ -22,11 +22,11 @@ pub fn check_player_death_system(
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::InGame), spawn_player_system.pipe(log_rtg_exception))
-            .add_systems(Startup, (
-            spawn_player_system.pipe(log_rtg_exception),
-            attach_fire_cooldown,
-        ).chain())
+        app
+            .add_systems(OnEnter(GameState::InGame), (
+                spawn_player_system.pipe(log_rtg_exception),
+                attach_fire_cooldown,
+            ).chain())
             .add_systems(Update, (
                 move_player_system.pipe(log_rtg_exception),
                 animate_player_system.pipe(log_rtg_exception),

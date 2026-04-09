@@ -10,7 +10,7 @@ pub(crate) struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_enemies)
+        app.add_systems(OnEnter(GameState::InGame), spawn_enemies)
             .add_systems(Update, (
                 animate_enemies_system.pipe(log_rtg_exception),
                 move_enemy_towards_player_system.pipe(log_rtg_exception),

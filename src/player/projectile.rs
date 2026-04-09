@@ -23,7 +23,7 @@ pub(crate) fn attach_fire_cooldown(
 ) {
     let Ok(entity) = query.single() else { return };
     let mut t = Timer::from_seconds(FIRE_RATE, TimerMode::Once);
-    t.tick(std::time::Duration::from_secs_f32(FIRE_RATE)); // déjà prêt à tirer
+    t.tick(std::time::Duration::from_secs_f32(FIRE_RATE));
     commands.entity(entity).insert(FireCooldown(t));
 }
 
