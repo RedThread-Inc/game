@@ -4,7 +4,7 @@ use crate::exceptions::RTGException;
 use crate::player::Player;
 use bevy::prelude::*;
 
-const MELEE_RANGE: f32 = 50.0;
+const MELEE_RANGE: f32 = 25.0;
 
 #[derive(Resource, Default)]
 pub(crate) struct PlayerDamageSoundState {
