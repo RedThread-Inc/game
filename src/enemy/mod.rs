@@ -3,6 +3,7 @@ pub(crate) mod movement;
 pub(crate) mod plugin;
 pub(crate) mod spawn;
 pub(crate) mod death;
+pub(crate) mod projectile;
 
 use bevy::prelude::*;
 
@@ -34,4 +35,10 @@ pub(crate) struct AnimationState {
 pub(crate) struct Enemy{
     pub(crate) health: f32,
     pub(crate) damage: f32
+}
+
+#[derive(Component)]
+pub(crate) struct RangedEnemy {
+    pub(crate) fire_cooldown: Timer,
+    pub(crate) attack_range: f32,
 }

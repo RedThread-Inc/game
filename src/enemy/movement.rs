@@ -1,4 +1,4 @@
-use crate::enemy::{AnimationState, Enemy, MOVE_SPEED as ENEMY_SPEED};
+use crate::enemy::{AnimationState, Enemy, RangedEnemy, MOVE_SPEED as ENEMY_SPEED};
 use crate::player::Player;
 use bevy::prelude::*;
 use crate::exceptions::RTGException;
