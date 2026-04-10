@@ -10,7 +10,7 @@ pub(crate) struct SoundCooldowns {
 impl Default for SoundCooldowns {
     fn default() -> Self {
         let mut t = Timer::from_seconds(0.12, TimerMode::Once);
-        t.tick(std::time::Duration::from_secs_f32(0.12)); // prêt dès le départ
+        t.tick(std::time::Duration::from_secs_f32(0.12));
         Self { enemy_hit: t }
     }
 }
