@@ -14,11 +14,7 @@ pub(crate) fn spawn_boss(
     round: Res<RoundState>,
 ) {
 
-    /*if round.current == 0 || round.current % 5 != 0 {
-        return;
-    }*/
-
-    if round.current != 1 {
+    if round.current == 0 || round.current % 5 != 0 {
         return;
     }
 
