@@ -12,10 +12,6 @@ pub(crate) fn boss_death_system(
     for (entity, boss) in query.iter() {
         if boss.health <= 0.0 {
             commands.entity(entity).despawn();
-
-            for proj_entity in projectiles.iter() {
-                commands.entity(proj_entity).despawn();
-            }
         }
     }
 }
