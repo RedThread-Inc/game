@@ -5,7 +5,7 @@ use crate::exceptions::RTGException;
 use crate::player::Player;
 use bevy::prelude::*;
 
-const MELEE_RANGE: f32 = 50.0;
+const MELEE_RANGE: f32 = 25.0;
 const BOSS_MELEE_RANGE: f32 = 120.0;
 
 #[derive(Resource, Default)]

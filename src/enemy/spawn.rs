@@ -5,6 +5,7 @@ use bevy::window::PrimaryWindow;
 use crate::InGameEntity;
 use crate::round::RoundState;
 use rand::Rng;
+use crate::enemy::projectile::ENEMY_ATTACK_RANGE;
 
 pub(crate) fn spawn_enemies(
     mut commands: Commands,
@@ -17,17 +18,18 @@ pub(crate) fn spawn_enemies(
     let half_w = window.width() / 2.0;
     let half_h = window.height() / 2.0;
 
-    let texture = asset_server.load("skeleton-spritesheet.png");
-    let layout = atlas_layouts.add(TextureAtlasLayout::from_grid(
+    let mut rng = rand::rng();
+    let player_pos = Vec2::ZERO;
+
+    // --- Melee enemies ---
+    let melee_texture = asset_server.load("skeleton-spritesheet.png");
+    let melee_layout = atlas_layouts.add(TextureAtlasLayout::from_grid(
         UVec2::splat(TILE_SIZE),
         WALK_FRAMES as u32,
         12,
         None,
         None,
     ));
-
-    let mut rng = rand::rng();
-    let player_pos = Vec2::ZERO;
 
     for _ in 0..round.enemy_count() {
         let pos = find_spawn_position(
@@ -43,9 +45,9 @@ pub(crate) fn spawn_enemies(
 
         commands.spawn((
             Sprite::from_atlas_image(
-                texture.clone(),
+                melee_texture.clone(),
                 TextureAtlas {
-                    layout: layout.clone(),
+                    layout: melee_layout.clone(),
                     index: start_index,
                 },
             ),
@@ -53,6 +55,56 @@ pub(crate) fn spawn_enemies(
             Enemy {
                 health: 100.0,
                 damage: 10.0,
+            },
+            AnimationState {
+                facing,
+                moving: true,
+                was_moving: false,
+            },
+            AnimationTimer(Timer::from_seconds(ANIM_DT, TimerMode::Repeating)),
+            InGameEntity,
+        ));
+    }
+
+    // --- Ranged enemies ---
+    let ranged_texture = asset_server.load("rangedEnemy.png");
+    let ranged_layout = atlas_layouts.add(TextureAtlasLayout::from_grid(
+        UVec2::splat(TILE_SIZE),
+        WALK_FRAMES as u32,
+        12,
+        None,
+        None,
+    ));
+
+    let ranged_count = (round.enemy_count() / 3).max(1);
+    for _ in 0..ranged_count {
+        let pos = find_spawn_position(
+            &mut rng,
+            half_w,
+            half_h,
+            player_pos,
+            round.min_distance_from_player,
+        );
+
+        let facing = Facing::Down;
+        let start_index = atlas_index_for(facing, 0);
+
+        commands.spawn((
+            Sprite::from_atlas_image(
+                ranged_texture.clone(),
+                TextureAtlas {
+                    layout: ranged_layout.clone(),
+                    index: start_index,
+                },
+            ),
+            Transform::from_translation(Vec3::new(pos.x, pos.y, 20.0)),
+            Enemy {
+                health: 80.0,
+                damage: 0.0,
+            },
+            RangedEnemy {
+                fire_cooldown: Timer::from_seconds(2.0, TimerMode::Repeating),
+                attack_range: ENEMY_ATTACK_RANGE,
             },
             AnimationState {
                 facing,

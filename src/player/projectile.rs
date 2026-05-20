@@ -10,7 +10,7 @@ const PROJECTILE_SPEED: f32 = 300.0;
 const PROJECTILE_RADIUS: f32 = 8.0;
 const PROJECTILE_DAMAGE: f32 = 20.0;
 const FIRE_RATE: f32 = 1.0;
-const SPREAD_ANGLE: f32 = 20.0; // degrés entre chaque projectile
+const SPREAD_ANGLE: f32 = 20.0;
 
 #[derive(Component)]
 pub(crate) struct Projectile {
