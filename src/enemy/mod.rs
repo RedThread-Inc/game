@@ -65,3 +65,8 @@ pub(crate) struct RangedEnemy {
     pub(crate) fire_cooldown: Timer,
     pub(crate) attack_range: f32,
 }
+
+#[derive(Component)]
+pub(crate) struct HitFlash {
+    pub(crate) timer: Timer,
+}

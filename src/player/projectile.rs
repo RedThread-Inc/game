@@ -1,5 +1,5 @@
 use crate::audio::{maybe_play, SoundCooldowns};
-use crate::enemy::Enemy;
+use crate::enemy::{Enemy, HitFlash};
 use crate::exceptions::RTGException;
 use crate::player::Player;
 use crate::upgrade::PlayerUpgrades;
@@ -132,7 +132,7 @@ pub(crate) fn move_projectiles_system(
     time: Res<Time>,
     mut projectile_query: Query<(Entity, &mut Transform, &Projectile)>,
     mut enemy_query: Query<(Entity, &Transform, &mut Enemy), Without<Projectile>>,
-    mut boss_query: Query<(&Transform, &mut Boss), Without<Projectile>>,
+    mut boss_query: Query<(Entity, &Transform, &mut Boss), Without<Projectile>>,
     asset_server: Res<AssetServer>,
     mut sound_cooldowns: ResMut<SoundCooldowns>,
 ) -> Result<(), RTGException> {
@@ -151,6 +151,10 @@ pub(crate) fn move_projectiles_system(
                 enemy.health -= projectile.damage;
                 commands.entity(proj_entity).despawn();
 
+                commands.entity(_enemy_entity).insert(HitFlash {
+                    timer: Timer::from_seconds(0.15, TimerMode::Once),
+                });
+
                 if sound_cooldowns.enemy_hit.is_finished() {
                     if maybe_play(&mut commands, &asset_server, "squelette_triso_damage.ogg", 0.70) {
                         sound_cooldowns.enemy_hit.reset();
@@ -160,7 +164,7 @@ pub(crate) fn move_projectiles_system(
             }
         }
 
-        for (boss_transform, mut boss) in boss_query.iter_mut() {
+        for (boss_entity, boss_transform, mut boss) in boss_query.iter_mut() {
             let distance = proj_transform
                 .translation
                 .truncate()
@@ -169,6 +173,10 @@ pub(crate) fn move_projectiles_system(
             if distance <= projectile.radius + 64.0 {  // Boss is larger (scaled 2.5x)
                 boss.health -= projectile.damage;
                 commands.entity(proj_entity).despawn();
+
+                commands.entity(boss_entity).insert(HitFlash {
+                    timer: Timer::from_seconds(0.15, TimerMode::Once),
+                });
 
                 if sound_cooldowns.enemy_hit.is_finished() {
                     if maybe_play(&mut commands, &asset_server, "squelette_triso_damage.ogg", 0.70) {
