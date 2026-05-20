@@ -5,6 +5,7 @@ use crate::InGameEntity;
 use crate::round::RoundState;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
+use bevy_rapier2d::prelude::*;
 
 pub(crate) fn spawn_boss(
     mut commands: Commands,
@@ -61,5 +62,11 @@ pub(crate) fn spawn_boss(
         AnimationTimer(Timer::from_seconds(ANIM_DT, TimerMode::Repeating)),
         BossAttackTimer(Timer::from_seconds(stats.fire_rate, TimerMode::Repeating)),
         InGameEntity,
+        RigidBody::Dynamic,
+        Collider::cuboid(20.0, 20.0),
+        LockedAxes::ROTATION_LOCKED,
+        GravityScale(0.0),
+        Velocity::default(),
+        Damping { linear_damping: 10.0, angular_damping: 0.0 },
     ));
 }

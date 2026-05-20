@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use rand::{Rng, SeedableRng};
 use rand::rngs::SmallRng;
 use std::collections::HashSet;
+use bevy_rapier2d::prelude::{Collider, RigidBody};
 use crate::map::{
     assets::TilemapHandles,
     generate::{TILE_SIZE, DEBUG_SEED},
@@ -110,6 +111,13 @@ fn spawn_big_trees(
             let wx = origin_x + x as f32 * TILE_SIZE + TILE_SIZE / 2.0;
             let wy = origin_y + y as f32 * TILE_SIZE + TILE_SIZE / 2.0;
 
+            commands.spawn((
+                Transform::from_xyz(wx + TILE_SIZE / 2.0, wy + TILE_SIZE / 2.0, 0.0),
+                GlobalTransform::default(),
+                RigidBody::Fixed,
+                Collider::cuboid(TILE_SIZE, TILE_SIZE),
+            ));
+
             for (name, dx, dy) in [
                 (bl, 0.0,       0.0      ),
                 (br, TILE_SIZE, 0.0      ),
@@ -170,6 +178,8 @@ fn spawn_props(
                     commands.spawn((
                         handles.sprite(idx),
                         Transform::from_xyz(wx, wy, 2.0),
+                        RigidBody::Fixed,
+                        Collider::cuboid(TILE_SIZE / 2.0, TILE_SIZE / 2.0),
                     ));
                 }
                 if let Some(top_name) = prop.top {

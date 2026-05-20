@@ -2,6 +2,7 @@ use crate::enemy::animate::atlas_index_for;
 use crate::enemy::*;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
+use bevy_rapier2d::prelude::*;
 use crate::InGameEntity;
 use crate::round::RoundState;
 use rand::Rng;
@@ -63,6 +64,12 @@ pub(crate) fn spawn_enemies(
             },
             AnimationTimer(Timer::from_seconds(ANIM_DT, TimerMode::Repeating)),
             InGameEntity,
+            RigidBody::Dynamic,
+            Collider::cuboid(16.0, 16.0),
+            LockedAxes::ROTATION_LOCKED,
+            GravityScale(0.0),
+            Velocity::default(),
+            Damping { linear_damping: 10.0, angular_damping: 0.0 },
         ));
     }
 
@@ -113,6 +120,12 @@ pub(crate) fn spawn_enemies(
             },
             AnimationTimer(Timer::from_seconds(ANIM_DT, TimerMode::Repeating)),
             InGameEntity,
+            RigidBody::Dynamic,
+            Collider::cuboid(16.0, 16.0),
+            LockedAxes::ROTATION_LOCKED,
+            GravityScale(0.0),
+            Velocity::default(),
+            Damping { linear_damping: 10.0, angular_damping: 0.0 },
         ));
     }
 

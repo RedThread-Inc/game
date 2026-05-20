@@ -16,6 +16,7 @@ use crate::map::generate::{setup_generator, TILE_SIZE};
 use crate::menu::pause_menu::PauseMenuPlugin;
 use crate::menu::death_menu::DeathMenuPlugin;
 use crate::boss::plugin::BossPlugin;
+use bevy_rapier2d::prelude::*;
 
 pub(crate) fn cleanup_game(mut commands: Commands, query: Query<Entity, With<InGameEntity>>) {
     for entity in &query {
@@ -45,6 +46,10 @@ pub(crate) fn init_app() {
                 })
                 .set(ImagePlugin::default_nearest()),
         )
+        .add_plugins((
+            RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(32.0),
+            RapierDebugRenderPlugin::default(),
+        ))
         .init_state::<GameState>()
         .add_sub_state::<InGameState>()
         .init_resource::<SoundCooldowns>()
