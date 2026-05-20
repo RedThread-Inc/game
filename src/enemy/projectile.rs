@@ -44,7 +44,7 @@ pub(crate) fn enemy_shoot_system(
 
         commands.spawn((
             Sprite {
-                image: asset_server.load("fireball.png"),
+                image: asset_server.load("ennemyFireball.png"),
                 custom_size: Some(Vec2::splat(20.0)),
                 ..default()
             },

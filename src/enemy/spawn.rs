@@ -22,7 +22,7 @@ pub(crate) fn spawn_enemies(
     let player_pos = Vec2::ZERO;
 
     // --- Melee enemies ---
-    /*let melee_texture = asset_server.load("skeleton-spritesheet.png");*/
+    let melee_texture = asset_server.load("skeleton-spritesheet.png");
     let melee_layout = atlas_layouts.add(TextureAtlasLayout::from_grid(
         UVec2::splat(TILE_SIZE),
         WALK_FRAMES as u32,
@@ -31,7 +31,7 @@ pub(crate) fn spawn_enemies(
         None,
     ));
 
-    /*for _ in 0..round.enemy_count() {
+    for _ in 0..round.enemy_count() {
         let pos = find_spawn_position(
             &mut rng,
             half_w,
@@ -64,7 +64,7 @@ pub(crate) fn spawn_enemies(
             AnimationTimer(Timer::from_seconds(ANIM_DT, TimerMode::Repeating)),
             InGameEntity,
         ));
-    }*/
+    }
 
     // --- Ranged enemies ---
     let ranged_texture = asset_server.load("rangedEnemy.png");
@@ -76,7 +76,7 @@ pub(crate) fn spawn_enemies(
         None,
     ));
 
-    let ranged_count = 5;/*(round.enemy_count() / 3).max(1);*/
+    let ranged_count = (round.enemy_count() / 3).max(1);
     for _ in 0..ranged_count {
         let pos = find_spawn_position(
             &mut rng,
