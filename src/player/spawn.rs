@@ -19,6 +19,7 @@ fn spawn_player(
 
     let player = Player {
         health: 100.0,
+        max_health: 100.0,
         damage: 25.0,
         damage_cooldown,
         attack_cooldown,
