@@ -11,7 +11,7 @@ impl Plugin for DeathMenuPlugin {
         app
             .add_systems(OnEnter(GameState::GameOver), (setup_death_menu, start_menu_music))
             .add_systems(Update, handle_death_buttons.run_if(in_state(GameState::GameOver)))
-            .add_systems(OnExit(GameState::GameOver), cleanup_death_menu);
+            .add_systems(OnExit(GameState::GameOver), (cleanup_death_menu, stop_menu_music));
     }
 }
 

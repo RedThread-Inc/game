@@ -15,6 +15,7 @@ use bevy_procedural_tilemaps::prelude::*;
 use crate::map::generate::{setup_generator, TILE_SIZE};
 use crate::menu::pause_menu::PauseMenuPlugin;
 use crate::menu::death_menu::DeathMenuPlugin;
+use crate::boss::plugin::BossPlugin;
 
 pub(crate) fn cleanup_game(mut commands: Commands, query: Query<Entity, With<InGameEntity>>) {
     for entity in &query {
@@ -48,7 +49,7 @@ pub(crate) fn init_app() {
         .add_sub_state::<InGameState>()
         .init_resource::<SoundCooldowns>()
         .add_systems(Update, tick_cooldowns)
-        .add_plugins((PlayerPlugin, EnemyPlugin, InterfacePlugin, MainMenuPlugin, PauseMenuPlugin, DeathMenuPlugin, RoundPlugin, UpgradePlugin))
+        .add_plugins((PlayerPlugin, EnemyPlugin, InterfacePlugin, MainMenuPlugin, PauseMenuPlugin, DeathMenuPlugin, RoundPlugin, UpgradePlugin, BossPlugin))
         .add_plugins(ProcGenSimplePlugin::<Cartesian3D, Sprite>::default())
         .add_systems(Startup, setup_camera)
         .add_systems(Startup, |windows: Query<&Window, With<PrimaryWindow>>| {
