@@ -12,6 +12,7 @@ mod exceptions;
 mod menu;
 mod round;
 mod upgrade;
+mod boss;
 
 fn main() {
     engine::init_app();

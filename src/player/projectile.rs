@@ -4,6 +4,7 @@ use crate::exceptions::RTGException;
 use crate::player::Player;
 use crate::upgrade::PlayerUpgrades;
 use bevy::prelude::*;
+use crate::boss::Boss;
 
 const PROJECTILE_SPEED: f32 = 300.0;
 const PROJECTILE_RADIUS: f32 = 8.0;
@@ -37,6 +38,7 @@ pub(crate) fn shoot_projectile_system(
     time: Res<Time>,
     mut player_query: Query<(&Transform, &mut FireCooldown), With<Player>>,
     enemy_query: Query<&Transform, With<Enemy>>,
+    mut boss_query: Query<(&Transform, &mut Boss)>,
     asset_server: Res<AssetServer>,
     upgrades: Res<PlayerUpgrades>,
 ) -> Result<(), RTGException> {
@@ -51,7 +53,8 @@ pub(crate) fn shoot_projectile_system(
 
     let player_pos = player_transform.translation.truncate();
 
-    let closest = enemy_query
+    // Get closest enemy
+    let closest_enemy = enemy_query
         .iter()
         .map(|t| t.translation.truncate())
         .min_by(|a, b| {
@@ -60,9 +63,24 @@ pub(crate) fn shoot_projectile_system(
                 .unwrap()
         });
 
-    let Some(enemy_pos) = closest else { return Ok(()) };
+    // Get boss position if it exists
+    let boss_pos = boss_query.iter().next().map(|(t, _)| t.translation.truncate());
 
-    let base_dir = (enemy_pos - player_pos).normalize_or_zero();
+    // Determine which is closer
+    let target_pos = match (closest_enemy, boss_pos) {
+        (Some(enemy), Some(boss)) => {
+            if enemy.distance(player_pos) <= boss.distance(player_pos) {
+                enemy
+            } else {
+                boss
+            }
+        }
+        (Some(enemy), None) => enemy,
+        (None, Some(boss)) => boss,
+        (None, None) => return Ok(()),
+    };
+
+    let base_dir = (target_pos - player_pos).normalize_or_zero();
     if base_dir == Vec2::ZERO {
         return Ok(());
     }
@@ -114,6 +132,7 @@ pub(crate) fn move_projectiles_system(
     time: Res<Time>,
     mut projectile_query: Query<(Entity, &mut Transform, &Projectile)>,
     mut enemy_query: Query<(Entity, &Transform, &mut Enemy), Without<Projectile>>,
+    mut boss_query: Query<(&Transform, &mut Boss), Without<Projectile>>,
     asset_server: Res<AssetServer>,
     mut sound_cooldowns: ResMut<SoundCooldowns>,
 ) -> Result<(), RTGException> {
@@ -130,6 +149,25 @@ pub(crate) fn move_projectiles_system(
 
             if distance <= projectile.radius + 32.0 {
                 enemy.health -= projectile.damage;
+                commands.entity(proj_entity).despawn();
+
+                if sound_cooldowns.enemy_hit.is_finished() {
+                    if maybe_play(&mut commands, &asset_server, "squelette_triso_damage.ogg", 0.70) {
+                        sound_cooldowns.enemy_hit.reset();
+                    }
+                }
+                break;
+            }
+        }
+
+        for (boss_transform, mut boss) in boss_query.iter_mut() {
+            let distance = proj_transform
+                .translation
+                .truncate()
+                .distance(boss_transform.translation.truncate());
+
+            if distance <= projectile.radius + 64.0 {  // Boss is larger (scaled 2.5x)
+                boss.health -= projectile.damage;
                 commands.entity(proj_entity).despawn();
 
                 if sound_cooldowns.enemy_hit.is_finished() {

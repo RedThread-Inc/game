@@ -7,9 +7,9 @@ pub(crate) mod projectile;
 
 use bevy::prelude::*;
 
-const TILE_SIZE: u32 = 64;
-const WALK_FRAMES: usize = 9;
-const ANIM_DT: f32 = 0.1;
+pub(crate) const TILE_SIZE: u32 = 64;
+pub(crate) const WALK_FRAMES: usize = 9;
+pub(crate) const ANIM_DT: f32 = 0.1;
 
 pub(crate) const MOVE_SPEED: f32 = 100.0;
 

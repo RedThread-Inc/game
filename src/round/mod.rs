@@ -1,6 +1,7 @@
 pub(crate) mod plugin;
 
 use bevy::prelude::*;
+use crate::boss::Boss;
 use crate::enemy::Enemy;
 use crate::InGameState;
 
@@ -38,14 +39,26 @@ impl RoundState {
         self.current += 1;
         self.spawned = false;
     }
+
+    pub(crate) fn is_boss_round(&self) -> bool {
+        self.current % 5 == 0
+    }
 }
 
 pub(crate) fn check_round_end_system(
     enemies: Query<&Enemy>,
+    bosses: Query<&Boss>,           // ← nouveau
     round: Res<RoundState>,
     mut next_state: ResMut<NextState<InGameState>>,
 ) {
-    if round.spawned && enemies.is_empty() {
+    if !round.spawned {
+        return;
+    }
+
+    let no_enemies = enemies.is_empty();
+    let no_boss = bosses.is_empty();   // boss mort ou manche sans boss
+
+    if no_enemies && no_boss {
         next_state.set(InGameState::ChoosingUpgrade);
     }
 }
