@@ -13,6 +13,29 @@ pub(crate) const ANIM_DT: f32 = 0.1;
 
 pub(crate) const MOVE_SPEED: f32 = 100.0;
 
+// Stats de base des ennemis
+const MELEE_BASE_HEALTH: f32  = 100.0;
+const MELEE_BASE_DAMAGE: f32  = 10.0;
+const RANGED_BASE_HEALTH: f32 = 80.0;
+const RANGED_BASE_DAMAGE: f32 = 8.0;
+
+// +15% vie et +10% dégâts par manche
+const HEALTH_SCALE_PER_ROUND: f32 = 0.15;
+const DAMAGE_SCALE_PER_ROUND: f32 = 0.10;
+
+pub(crate) fn scaled_health(base: f32, round: u32) -> f32 {
+    base * (1.0 + HEALTH_SCALE_PER_ROUND * (round.saturating_sub(1)) as f32)
+}
+
+pub(crate) fn scaled_damage(base: f32, round: u32) -> f32 {
+    base * (1.0 + DAMAGE_SCALE_PER_ROUND * (round.saturating_sub(1)) as f32)
+}
+
+pub(crate) fn melee_health(round: u32) -> f32  { scaled_health(MELEE_BASE_HEALTH, round) }
+pub(crate) fn melee_damage(round: u32) -> f32  { scaled_damage(MELEE_BASE_DAMAGE, round) }
+pub(crate) fn ranged_health(round: u32) -> f32 { scaled_health(RANGED_BASE_HEALTH, round) }
+pub(crate) fn ranged_damage(round: u32) -> f32 { scaled_damage(RANGED_BASE_DAMAGE, round) }
+
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Facing {
     Up,
@@ -32,9 +55,9 @@ pub(crate) struct AnimationState {
 }
 
 #[derive(Component)]
-pub(crate) struct Enemy{
+pub(crate) struct Enemy {
     pub(crate) health: f32,
-    pub(crate) damage: f32
+    pub(crate) damage: f32,
 }
 
 #[derive(Component)]

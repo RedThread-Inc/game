@@ -5,12 +5,13 @@ use crate::upgrade::{PlayerUpgrades, Upgrade};
 use crate::InGameState;
 use rand::seq::SliceRandom;
 
-const ALL_UPGRADES: [Upgrade; 5] = [
+const ALL_UPGRADES: [Upgrade; 6] = [
     Upgrade::ExtraProjectile,
     Upgrade::FasterFireRate,
     Upgrade::MoreDamage,
     Upgrade::FasterProjectile,
     Upgrade::LargerRadius,
+    Upgrade::MoreHealth,
 ];
 
 const PARCHMENT:    Color = Color::srgba(0.847, 0.769, 0.588, 0.95);

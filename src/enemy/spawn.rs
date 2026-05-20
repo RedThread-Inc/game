@@ -20,6 +20,7 @@ pub(crate) fn spawn_enemies(
 
     let mut rng = rand::rng();
     let player_pos = Vec2::ZERO;
+    let current_round = round.current;
 
     // --- Melee enemies ---
     let melee_texture = asset_server.load("skeleton-spritesheet.png");
@@ -53,8 +54,8 @@ pub(crate) fn spawn_enemies(
             ),
             Transform::from_translation(Vec3::new(pos.x, pos.y, 20.0)),
             Enemy {
-                health: 100.0,
-                damage: 10.0,
+                health: melee_health(current_round),
+                damage: melee_damage(current_round),
             },
             AnimationState {
                 facing,
@@ -99,8 +100,8 @@ pub(crate) fn spawn_enemies(
             ),
             Transform::from_translation(Vec3::new(pos.x, pos.y, 20.0)),
             Enemy {
-                health: 80.0,
-                damage: 0.0,
+                health: ranged_health(current_round),
+                damage: ranged_damage(current_round),
             },
             RangedEnemy {
                 fire_cooldown: Timer::from_seconds(2.0, TimerMode::Repeating),

@@ -19,7 +19,7 @@ pub(crate) fn enemy_death_system(
         if enemy.health <= 0.0 {
             commands.entity(entity).despawn();
 
-            if rng.random_range(0.0..1.0) < 0.2 {
+            if rng.random_range(0.0..1.0) < 0.05 {
                 commands.spawn((
                     Sprite {
                         image: asset_server.load("healthPotion.png"),

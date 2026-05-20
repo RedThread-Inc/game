@@ -111,15 +111,15 @@ pub(crate) fn shoot_projectile_system(
             )),
             Projectile {
                 direction: dir,
-                damage: PROJECTILE_DAMAGE * upgrades.damage_multiplier,
-                speed: PROJECTILE_SPEED * upgrades.speed_multiplier,
-                radius: PROJECTILE_RADIUS + upgrades.radius_bonus,
+                damage: PROJECTILE_DAMAGE * upgrades.damage_multiplier(),
+                speed: PROJECTILE_SPEED * upgrades.speed_multiplier(),
+                radius: PROJECTILE_RADIUS + upgrades.radius_bonus(),
             },
         ));
     }
 
     let new_duration = std::time::Duration::from_secs_f32(
-        (FIRE_RATE * upgrades.fire_rate_multiplier).max(0.1),
+        (FIRE_RATE * upgrades.fire_rate_multiplier()).max(0.1),
     );
     cooldown.0.set_duration(new_duration);
     cooldown.0.reset();

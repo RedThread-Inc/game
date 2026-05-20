@@ -13,10 +13,10 @@ pub(crate) const BOSS_WALK_FRAMES: usize = 9;
 pub(crate) const BOSS_ANIM_DT: f32 = 0.1;
 pub(crate) const BOSS_SCALE: f32 = 2.5;
 
-pub(crate) const BOSS_MOVE_SPEED: f32 = 45.0;
-pub(crate) const BOSS_BASE_HP: f32 = 1.0;
-pub(crate) const BOSS_BASE_PROJECTILE_COUNT: u32 = 8;
-pub(crate) const BOSS_BASE_PROJECTILE_SPEED: f32 = 120.0;
+pub(crate) const BOSS_MOVE_SPEED: f32 = 50.0;
+pub(crate) const BOSS_BASE_HP: f32 = 200.0;
+pub(crate) const BOSS_BASE_PROJECTILE_COUNT: u32 = 10;
+pub(crate) const BOSS_BASE_PROJECTILE_SPEED: f32 = 140.0;
 pub(crate) const BOSS_BASE_FIRE_RATE: f32 = 2.0;
 
 #[derive(Component)]

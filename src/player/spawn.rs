@@ -4,11 +4,15 @@ use crate::player::*;
 use bevy::prelude::*;
 use crate::exceptions::RTGException;
 use crate::InGameEntity;
+use crate::upgrade::PlayerUpgrades;
+
+const BASE_MAX_HEALTH: f32 = 100.0;
 
 fn spawn_player(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+    upgrades: Res<PlayerUpgrades>,
 ) -> Result<(), RTGException> {
 
     let mut damage_cooldown = Timer::from_seconds(1.0, TimerMode::Once);
@@ -17,9 +21,11 @@ fn spawn_player(
     let mut attack_cooldown = Timer::from_seconds(0.5, TimerMode::Once);
     attack_cooldown.tick(Duration::from_secs_f32(0.5));
 
+    let max_health = BASE_MAX_HEALTH + upgrades.max_health_bonus();
+
     let player = Player {
-        health: 100.0,
-        max_health: 100.0,
+        health: max_health,
+        max_health,
         damage: 25.0,
         damage_cooldown,
         attack_cooldown,
@@ -60,11 +66,12 @@ fn spawn_player(
 }
 
 pub(crate) fn spawn_player_system(
-    mut commands: Commands,
+    commands: Commands,
     asset_server: Res<AssetServer>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+    upgrades: Res<PlayerUpgrades>,
 ) -> Result<(), RTGException> {
-    if let Err(e) = spawn_player(commands, asset_server, atlas_layouts) {
+    if let Err(e) = spawn_player(commands, asset_server, atlas_layouts, upgrades) {
         println!("{}", e.to_string());
         return Err(e);
     } else {
