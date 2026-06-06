@@ -50,7 +50,7 @@ fn spawn_player(
         AnimationTimer(Timer::from_seconds(ANIM_DT, TimerMode::Repeating)),
         InGameEntity,
         RigidBody::Dynamic,
-        Collider::cuboid(10.0, 16.0),
+        Collider::cuboid(10.0, 8.0),
         LockedAxes::ROTATION_LOCKED,
         GravityScale(0.0),
         Velocity::default(),
