@@ -124,6 +124,7 @@ pub(crate) fn shoot_projectile_system(
             LockedAxes::ROTATION_LOCKED,
             Velocity::default(),
             player_projectile_membership(),
+            CollidingEntities::default(),
         ));
     }
 

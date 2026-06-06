@@ -69,6 +69,7 @@ pub(crate) fn enemy_shoot_system(
             LockedAxes::ROTATION_LOCKED,
             Velocity::default(),
             enemy_projectile_membership(),
+            CollidingEntities::default(),
         ));
 
         ranged.fire_cooldown.reset();
@@ -77,13 +78,11 @@ pub(crate) fn enemy_shoot_system(
 
 pub(crate) fn move_enemy_projectiles_system(
     mut commands: Commands,
-    time: Res<Time>,
-    mut proj_query: Query<(Entity, &mut Transform, &mut Velocity, &EnemyProjectile), Without<Player>>,
+    mut proj_query: Query<(Entity, &Transform, &mut Velocity, &EnemyProjectile)>,
 ) {
     for (entity, transform, mut velocity, proj) in proj_query.iter_mut() {
         velocity.linear = proj.direction * proj.speed;
 
-        // Despawn if off-screen
         if transform.translation.x.abs() > 1500.0 || transform.translation.y.abs() > 1500.0 {
             commands.entity(entity).despawn();
         }
@@ -92,22 +91,19 @@ pub(crate) fn move_enemy_projectiles_system(
 
 pub(crate) fn enemy_projectile_hit_player_system(
     mut commands: Commands,
-    mut player_query: Query<(&Transform, &mut Player)>,
-    proj_query: Query<(Entity, &Transform, &EnemyProjectile)>,
+    proj_query: Query<(Entity, &EnemyProjectile, &CollidingEntities)>,
+    mut player_query: Query<&mut Player>,
 ) {
-    let Ok((player_transform, mut player)) = player_query.single_mut() else { return };
-    let player_pos = player_transform.translation.truncate();
+    for (proj_entity, proj, colliding) in proj_query.iter() {
+        for target_entity in colliding.iter() {
+            let Ok(mut player) = player_query.get_mut(target_entity) else { continue };
 
-    for (entity, proj_transform, proj) in proj_query.iter() {
-        let proj_pos = proj_transform.translation.truncate();
-        let distance = player_pos.distance(proj_pos);
-
-        if distance < proj.radius + 16.0 {
             if player.damage_cooldown.is_finished() {
                 player.health -= proj.damage;
                 player.damage_cooldown.reset();
             }
-            commands.entity(entity).despawn();
+            commands.entity(proj_entity).despawn();
+            break;
         }
     }
 }
