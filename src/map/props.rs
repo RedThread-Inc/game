@@ -116,10 +116,11 @@ fn spawn_big_trees(
             let wy = origin_y + y as f32 * TILE_SIZE + TILE_SIZE / 2.0;
 
             commands.spawn((
-                Transform::from_xyz(wx + TILE_SIZE / 2.0, wy - TILE_SIZE / 2.0, 0.0),
+                Transform::from_xyz(wx + TILE_SIZE / 2.0, wy - TILE_SIZE * 0.25, 0.0),
                 GlobalTransform::default(),
                 RigidBody::Fixed,
-                Collider::cuboid(TILE_SIZE / 2.0, TILE_SIZE / 2.0),
+                world_membership(),
+                Collider::ball(8.0),
             ));
 
             for (name, dx, dy) in [
