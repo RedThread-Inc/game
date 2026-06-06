@@ -3,10 +3,13 @@ use crate::enemy::{AnimationState, AnimationTimer, Facing, ANIM_DT, TILE_SIZE, W
 use crate::enemy::animate::atlas_index_for;
 use crate::InGameEntity;
 use crate::round::RoundState;
+use crate::map::generate::{TerrainHeightMap, TILE_SIZE as MAP_TILE_SIZE};
+use crate::map::perlin::TerrainZone;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_rapier2d::prelude::*;
 use crate::core::collision_groups::boss_membership;
+use rand::Rng;
 
 pub(crate) fn spawn_boss(
     mut commands: Commands,
@@ -14,18 +17,20 @@ pub(crate) fn spawn_boss(
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     windows: Query<&Window, With<PrimaryWindow>>,
     round: Res<RoundState>,
+    terrain: Option<Res<TerrainHeightMap>>,
 ) {
-
     if round.current == 0 || round.current % 5 != 0 {
         return;
     }
 
     let Ok(window) = windows.single() else { return };
     let half_w = window.width() / 2.0;
+    let half_h = window.height() / 2.0;
 
     let stats = BossStats::for_round(round.current);
 
-    // Même spritesheet que skeleton, même layout 9x12
+    let spawn_pos = find_boss_spawn(half_w, half_h, terrain.as_deref());
+
     let texture = asset_server.load("boss.png");
     let layout = atlas_layouts.add(TextureAtlasLayout::from_grid(
         UVec2::splat(TILE_SIZE),
@@ -47,7 +52,7 @@ pub(crate) fn spawn_boss(
             },
         ),
         Transform {
-            translation: Vec3::new(half_w - 120.0, 0.0, 20.0),
+            translation: Vec3::new(spawn_pos.x, spawn_pos.y, 20.0),
             scale: Vec3::splat(BOSS_SCALE),
             ..default()
         },
@@ -71,4 +76,44 @@ pub(crate) fn spawn_boss(
         Damping { linear_damping: 10.0, angular_damping: 0.0 },
         boss_membership(),
     ));
+}
+
+fn find_boss_spawn(half_w: f32, half_h: f32, terrain: Option<&TerrainHeightMap>) -> Vec2 {
+    let candidates = [
+        Vec2::new(half_w - 120.0, 0.0),
+        Vec2::new(-(half_w - 120.0), 0.0),
+        Vec2::new(0.0, half_h - 120.0),
+        Vec2::new(0.0, -(half_h - 120.0)),
+    ];
+
+    let Some(t) = terrain else {
+        return candidates[0];
+    };
+
+    for pos in candidates {
+        let tile_x = ((pos.x + half_w) / MAP_TILE_SIZE) as u32;
+        let tile_y = ((pos.y + half_h) / MAP_TILE_SIZE) as u32;
+        let tx = tile_x.min(t.0.width.saturating_sub(1));
+        let ty = tile_y.min(t.0.height.saturating_sub(1));
+
+        if t.0.classify(tx, ty) != TerrainZone::Water {
+            return pos;
+        }
+    }
+
+    // Fallback : scan brut
+    let mut rng = rand::rng();
+    for _ in 0..200 {
+        let x = rng.random_range(-half_w..half_w);
+        let y = rng.random_range(-half_h..half_h);
+        let tile_x = ((x + half_w) / MAP_TILE_SIZE) as u32;
+        let tile_y = ((y + half_h) / MAP_TILE_SIZE) as u32;
+        let tx = tile_x.min(t.0.width.saturating_sub(1));
+        let ty = tile_y.min(t.0.height.saturating_sub(1));
+        if t.0.classify(tx, ty) != TerrainZone::Water {
+            return Vec2::new(x, y);
+        }
+    }
+
+    Vec2::ZERO
 }
