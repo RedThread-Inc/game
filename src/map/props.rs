@@ -3,6 +3,7 @@ use rand::{Rng, SeedableRng};
 use rand::rngs::SmallRng;
 use std::collections::HashSet;
 use bevy_rapier2d::prelude::{Collider, RigidBody};
+use crate::core::collision_groups::world_membership;
 use crate::map::{
     assets::TilemapHandles,
     generate::{TILE_SIZE, DEBUG_SEED},
@@ -180,6 +181,7 @@ fn spawn_props(
                         Transform::from_xyz(wx, wy, 2.0),
                         RigidBody::Fixed,
                         Collider::cuboid(TILE_SIZE / 2.0, TILE_SIZE / 2.0),
+                        world_membership(),
                     ));
                 }
                 if let Some(top_name) = prop.top {
