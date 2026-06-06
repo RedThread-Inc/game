@@ -64,7 +64,7 @@ pub(crate) fn spawn_boss(
         BossAttackTimer(Timer::from_seconds(stats.fire_rate, TimerMode::Repeating)),
         InGameEntity,
         RigidBody::Dynamic,
-        Collider::cuboid(20.0, 20.0),
+        Collider::cuboid(16.0, 16.0),
         LockedAxes::ROTATION_LOCKED,
         GravityScale(0.0),
         Velocity::default(),
