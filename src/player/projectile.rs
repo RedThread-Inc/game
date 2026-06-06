@@ -4,7 +4,9 @@ use crate::exceptions::RTGException;
 use crate::player::Player;
 use crate::upgrade::PlayerUpgrades;
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
 use crate::boss::Boss;
+use crate::core::collision_groups::player_projectile_membership;
 
 const PROJECTILE_SPEED: f32 = 300.0;
 const PROJECTILE_RADIUS: f32 = 8.0;
@@ -53,7 +55,6 @@ pub(crate) fn shoot_projectile_system(
 
     let player_pos = player_transform.translation.truncate();
 
-    // Get closest enemy
     let closest_enemy = enemy_query
         .iter()
         .map(|t| t.translation.truncate())
@@ -115,6 +116,14 @@ pub(crate) fn shoot_projectile_system(
                 speed: PROJECTILE_SPEED * upgrades.speed_multiplier,
                 radius: PROJECTILE_RADIUS + upgrades.radius_bonus,
             },
+            RigidBody::Dynamic,
+            Collider::ball(PROJECTILE_RADIUS),
+            Sensor,
+            ActiveEvents::COLLISION_EVENTS,
+            GravityScale(0.0),
+            LockedAxes::ROTATION_LOCKED,
+            Velocity::default(),
+            player_projectile_membership(),
         ));
     }
 
@@ -129,17 +138,21 @@ pub(crate) fn shoot_projectile_system(
 
 pub(crate) fn move_projectiles_system(
     mut commands: Commands,
-    time: Res<Time>,
-    mut projectile_query: Query<(Entity, &mut Transform, &Projectile)>,
+    mut projectile_query: Query<(Entity, &Transform, &mut Velocity, &Projectile)>,
     mut enemy_query: Query<(Entity, &Transform, &mut Enemy), Without<Projectile>>,
     mut boss_query: Query<(&Transform, &mut Boss), Without<Projectile>>,
     asset_server: Res<AssetServer>,
     mut sound_cooldowns: ResMut<SoundCooldowns>,
 ) -> Result<(), RTGException> {
-    for (proj_entity, mut proj_transform, projectile) in projectile_query.iter_mut() {
-        let delta = projectile.direction * projectile.speed * time.delta_secs();
-        proj_transform.translation.x += delta.x;
-        proj_transform.translation.y += delta.y;
+    for (proj_entity, proj_transform, mut velocity, projectile) in projectile_query.iter_mut() {
+        velocity.linear = projectile.direction * projectile.speed;
+
+        if proj_transform.translation.x.abs() > 1500.0
+            || proj_transform.translation.y.abs() > 1500.0
+        {
+            commands.entity(proj_entity).despawn();
+            continue;
+        }
 
         for (_enemy_entity, enemy_transform, mut enemy) in enemy_query.iter_mut() {
             let distance = proj_transform
@@ -166,7 +179,7 @@ pub(crate) fn move_projectiles_system(
                 .truncate()
                 .distance(boss_transform.translation.truncate());
 
-            if distance <= projectile.radius + 64.0 {  // Boss is larger (scaled 2.5x)
+            if distance <= projectile.radius + 64.0 {
                 boss.health -= projectile.damage;
                 commands.entity(proj_entity).despawn();
 
