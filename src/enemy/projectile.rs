@@ -1,4 +1,6 @@
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
+use crate::core::collision_groups::enemy_projectile_membership;
 use crate::enemy::RangedEnemy;
 use crate::player::Player;
 
@@ -59,6 +61,14 @@ pub(crate) fn enemy_shoot_system(
                 damage: ENEMY_PROJ_DAMAGE,
                 radius: ENEMY_PROJ_RADIUS,
             },
+            RigidBody::Dynamic,
+            Collider::ball(ENEMY_PROJ_RADIUS),
+            Sensor,
+            ActiveEvents::COLLISION_EVENTS,
+            GravityScale(0.0),
+            LockedAxes::ROTATION_LOCKED,
+            Velocity::default(),
+            enemy_projectile_membership(),
         ));
 
         ranged.fire_cooldown.reset();
@@ -68,12 +78,10 @@ pub(crate) fn enemy_shoot_system(
 pub(crate) fn move_enemy_projectiles_system(
     mut commands: Commands,
     time: Res<Time>,
-    mut proj_query: Query<(Entity, &mut Transform, &EnemyProjectile), Without<Player>>,
+    mut proj_query: Query<(Entity, &mut Transform, &mut Velocity, &EnemyProjectile), Without<Player>>,
 ) {
-    for (entity, mut transform, proj) in proj_query.iter_mut() {
-        let delta = proj.direction * proj.speed * time.delta_secs();
-        transform.translation.x += delta.x;
-        transform.translation.y += delta.y;
+    for (entity, transform, mut velocity, proj) in proj_query.iter_mut() {
+        velocity.linear = proj.direction * proj.speed;
 
         // Despawn if off-screen
         if transform.translation.x.abs() > 1500.0 || transform.translation.y.abs() > 1500.0 {
