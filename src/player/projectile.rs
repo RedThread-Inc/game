@@ -139,50 +139,39 @@ pub(crate) fn shoot_projectile_system(
 pub(crate) fn move_projectiles_system(
     mut commands: Commands,
     mut projectile_query: Query<(Entity, &Transform, &mut Velocity, &Projectile)>,
-    mut enemy_query: Query<(Entity, &Transform, &mut Enemy), Without<Projectile>>,
-    mut boss_query: Query<(&Transform, &mut Boss), Without<Projectile>>,
-    asset_server: Res<AssetServer>,
-    mut sound_cooldowns: ResMut<SoundCooldowns>,
 ) -> Result<(), RTGException> {
-    for (proj_entity, proj_transform, mut velocity, projectile) in projectile_query.iter_mut() {
+    for (entity, transform, mut velocity, projectile) in projectile_query.iter_mut() {
         velocity.linear = projectile.direction * projectile.speed;
 
-        if proj_transform.translation.x.abs() > 1500.0
-            || proj_transform.translation.y.abs() > 1500.0
-        {
-            commands.entity(proj_entity).despawn();
-            continue;
+        if transform.translation.x.abs() > 1500.0 || transform.translation.y.abs() > 1500.0 {
+            commands.entity(entity).despawn();
         }
+    }
+    Ok(())
+}
 
-        for (_enemy_entity, enemy_transform, mut enemy) in enemy_query.iter_mut() {
-            let distance = proj_transform
-                .translation
-                .truncate()
-                .distance(enemy_transform.translation.truncate());
-
-            if distance <= projectile.radius + 32.0 {
+pub(crate) fn player_projectile_hit_system(
+    mut commands: Commands,
+    projectile_query: Query<(Entity, &Projectile, &CollidingEntities)>,
+    mut enemy_query: Query<&mut Enemy>,
+    mut boss_query: Query<&mut Boss>,
+    asset_server: Res<AssetServer>,
+    mut sound_cooldowns: ResMut<SoundCooldowns>,
+) {
+    for (proj_entity, projectile, colliding) in projectile_query.iter() {
+        for target_entity in colliding.iter() {
+            if let Ok(mut enemy) = enemy_query.get_mut(target_entity) {
                 enemy.health -= projectile.damage;
                 commands.entity(proj_entity).despawn();
-
                 if sound_cooldowns.enemy_hit.is_finished() {
                     if maybe_play(&mut commands, &asset_server, "squelette_triso_damage.ogg", 0.70) {
                         sound_cooldowns.enemy_hit.reset();
                     }
                 }
                 break;
-            }
-        }
-
-        for (boss_transform, mut boss) in boss_query.iter_mut() {
-            let distance = proj_transform
-                .translation
-                .truncate()
-                .distance(boss_transform.translation.truncate());
-
-            if distance <= projectile.radius + 64.0 {
+            } else if let Ok(mut boss) = boss_query.get_mut(target_entity) {
                 boss.health -= projectile.damage;
                 commands.entity(proj_entity).despawn();
-
                 if sound_cooldowns.enemy_hit.is_finished() {
                     if maybe_play(&mut commands, &asset_server, "squelette_triso_damage.ogg", 0.70) {
                         sound_cooldowns.enemy_hit.reset();
@@ -192,8 +181,6 @@ pub(crate) fn move_projectiles_system(
             }
         }
     }
-
-    Ok(())
 }
 
 fn rotate_vec2(v: Vec2, angle: f32) -> Vec2 {
