@@ -162,12 +162,37 @@ fn find_spawn_position(
             let tile_y = ((y + half_h) / MAP_TILE_SIZE) as u32;
             let tx = tile_x.min(t.0.width.saturating_sub(1));
             let ty = tile_y.min(t.0.height.saturating_sub(1));
-            if t.0.classify(tx, ty) == TerrainZone::Water {
+
+            let zone = t.0.classify(tx, ty);
+            if zone == TerrainZone::Water {
+                continue;
+            }
+
+            // Reject water-adjacent tiles (the visual border)
+            if is_near_water_tile(&t.0, tx, ty) {
                 continue;
             }
         }
 
+
         return candidate;
     }
     Vec2::new(half_w * 0.5, half_h * 0.5)
+}
+
+fn is_near_water_tile(height_map: &crate::map::perlin::HeightMap, x: u32, y: u32) -> bool {
+    for dx in -1i32..=1 {
+        for dy in -1i32..=1 {
+            if dx == 0 && dy == 0 { continue; }
+            let nx = x as i32 + dx;
+            let ny = y as i32 + dy;
+            if nx < 0 || nx >= height_map.width as i32 || ny < 0 || ny >= height_map.height as i32 {
+                continue;
+            }
+            if height_map.classify(nx as u32, ny as u32) == TerrainZone::Water {
+                return true;
+            }
+        }
+    }
+    false
 }
