@@ -6,6 +6,7 @@ use bevy_rapier2d::prelude::*;
 use crate::InGameEntity;
 use crate::round::RoundState;
 use rand::Rng;
+use crate::core::collision_groups::enemy_membership;
 use crate::enemy::projectile::ENEMY_ATTACK_RANGE;
 
 pub(crate) fn spawn_enemies(
@@ -70,6 +71,7 @@ pub(crate) fn spawn_enemies(
             GravityScale(0.0),
             Velocity::default(),
             Damping { linear_damping: 10.0, angular_damping: 0.0 },
+            enemy_membership(),
         ));
     }
 

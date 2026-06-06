@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_rapier2d::prelude::{Collider, RigidBody};
+use crate::core::collision_groups::world_membership;
 use crate::map::{
     assets::{prepare_tilemap_handles, TilemapHandles},
     perlin::{HeightMap, TerrainZone},
@@ -72,11 +73,11 @@ pub(crate) fn setup_generator(
             ));
 
             if zone == TerrainZone::Water {
-                entity.insert((RigidBody::Fixed, Collider::cuboid(TILE_SIZE / 2.0, TILE_SIZE / 2.0)));
+                entity.insert((RigidBody::Fixed, Collider::cuboid(TILE_SIZE / 2.0, TILE_SIZE / 2.0), world_membership()));
             }
 
             else if borders_water {
-                entity.insert((RigidBody::Fixed, Collider::cuboid(TILE_SIZE / 2.0, TILE_SIZE / 2.0)));
+                entity.insert((RigidBody::Fixed, Collider::cuboid(TILE_SIZE / 2.0, TILE_SIZE / 2.0), world_membership()));
             }
 
 
@@ -119,6 +120,7 @@ fn is_tile_water_border(
 fn spawn_transition(commands: &mut Commands, handles: &TilemapHandles, height_map: &HeightMap, grid_x: u32, grid_y: u32, x: u32, y: u32, world_x: f32, world_y: f32) {
 
     let center = height_map.classify(x, y);
+    let cp = terrain_priority(center);
     let cp = terrain_priority(center);
 
     let get_zone = |dx: i32, dy: i32| -> TerrainZone {

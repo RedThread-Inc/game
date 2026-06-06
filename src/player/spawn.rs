@@ -3,6 +3,7 @@ use crate::player::animate::atlas_index_for;
 use crate::player::*;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use crate::core::collision_groups::player_membership;
 use crate::exceptions::RTGException;
 use crate::InGameEntity;
 
@@ -54,6 +55,7 @@ fn spawn_player(
         GravityScale(0.0),
         Velocity::default(),
         Damping { linear_damping: 50.0, angular_damping: 0.0 },
+        player_membership(),
     ));
 
     Ok(())

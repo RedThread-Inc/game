@@ -6,6 +6,7 @@ use crate::round::RoundState;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_rapier2d::prelude::*;
+use crate::core::collision_groups::boss_membership;
 
 pub(crate) fn spawn_boss(
     mut commands: Commands,
@@ -68,5 +69,6 @@ pub(crate) fn spawn_boss(
         GravityScale(0.0),
         Velocity::default(),
         Damping { linear_damping: 10.0, angular_damping: 0.0 },
+        boss_membership(),
     ));
 }
