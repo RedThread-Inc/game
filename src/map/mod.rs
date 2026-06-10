@@ -1,6 +1,6 @@
 mod assets;
 mod tilemap;
-mod perlin;
+pub(crate) mod perlin;
 mod props;
 pub(crate) mod generate;
 

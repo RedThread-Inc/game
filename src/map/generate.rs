@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
+use bevy_rapier2d::prelude::{Collider, RigidBody};
+use crate::core::collision_groups::world_membership;
 use crate::map::{
     assets::{prepare_tilemap_handles, TilemapHandles},
     perlin::{HeightMap, TerrainZone},
@@ -62,7 +64,21 @@ pub(crate) fn setup_generator(
             let zone = height_map.classify(x, y);
             let base_sprite_name = zone_prefix(zone);
             let base_sprite_id = TILEMAP.sprite_index(base_sprite_name).unwrap_or_else(|| panic!("Unknown sprite: '{}'", base_sprite_name));
-            commands.spawn((handles.sprite(base_sprite_id), Transform::from_xyz(world_x, world_y, 0.0)));
+
+            let borders_water = is_tile_water_border(&height_map, x, y, grid_x, grid_y);
+
+            let mut entity = commands.spawn((
+                handles.sprite(base_sprite_id),
+                Transform::from_xyz(world_x, world_y, 0.0)
+            ));
+
+            if zone == TerrainZone::Water {
+                entity.insert((RigidBody::Fixed, Collider::cuboid(TILE_SIZE / 2.0, TILE_SIZE / 2.0), world_membership()));
+            }
+
+            else if borders_water {
+                entity.insert((RigidBody::Fixed, Collider::cuboid(TILE_SIZE / 2.0, TILE_SIZE / 2.0), world_membership()));
+            }
 
 
             spawn_transition(&mut commands, &handles, &height_map, grid_x, grid_y, x, y, world_x, world_y);
@@ -74,9 +90,37 @@ pub(crate) fn setup_generator(
     commands.insert_resource(TerrainHeightMap(height_map));
 }
 
+
+fn is_tile_water_border(
+    height_map: &HeightMap,
+    x: u32, y: u32,
+    grid_x: u32, grid_y: u32,
+) -> bool {
+    // This tile itself must not be water
+    if height_map.classify(x, y) == TerrainZone::Water {
+        return false;
+    }
+
+    for dx in -1i32..=1 {
+        for dy in -1i32..=1 {
+            if dx == 0 && dy == 0 { continue; }
+            let nx = x as i32 + dx;
+            let ny = y as i32 + dy;
+            if nx < 0 || nx >= grid_x as i32 || ny < 0 || ny >= grid_y as i32 {
+                continue;
+            }
+            if height_map.classify(nx as u32, ny as u32) == TerrainZone::Water {
+                return true;
+            }
+        }
+    }
+    false
+}
+
 fn spawn_transition(commands: &mut Commands, handles: &TilemapHandles, height_map: &HeightMap, grid_x: u32, grid_y: u32, x: u32, y: u32, world_x: f32, world_y: f32) {
 
     let center = height_map.classify(x, y);
+    let cp = terrain_priority(center);
     let cp = terrain_priority(center);
 
     let get_zone = |dx: i32, dy: i32| -> TerrainZone {

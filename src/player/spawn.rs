@@ -2,6 +2,8 @@ use std::time::Duration;
 use crate::player::animate::atlas_index_for;
 use crate::player::*;
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
+use crate::core::collision_groups::player_membership;
 use crate::exceptions::RTGException;
 use crate::InGameEntity;
 use crate::upgrade::PlayerUpgrades;
@@ -46,20 +48,20 @@ fn spawn_player(
     commands.spawn((
         Sprite::from_atlas_image(
             texture,
-            TextureAtlas {
-                layout,
-                index: start_index,
-            },
+            TextureAtlas { layout, index: start_index },
         ),
         Transform::from_translation(Vec3::new(0.0, 0.0, PLAYER_Z)),
         player,
-        AnimationState {
-            facing,
-            moving: false,
-            was_moving: false,
-        },
+        AnimationState { facing, moving: false, was_moving: false },
         AnimationTimer(Timer::from_seconds(ANIM_DT, TimerMode::Repeating)),
         InGameEntity,
+        RigidBody::Dynamic,
+        Collider::cuboid(10.0, 8.0),
+        LockedAxes::ROTATION_LOCKED,
+        GravityScale(0.0),
+        Velocity::default(),
+        Damping { linear_damping: 50.0, angular_damping: 0.0 },
+        player_membership(),
     ));
 
     Ok(())

@@ -3,14 +3,14 @@ use crate::player::{AnimationState, Facing, MOVE_SPEED, Player};
 use bevy::input::ButtonInput;
 use bevy::math::Vec2;
 use bevy::prelude::{KeyCode, Res, Single, Time, Transform, With, Without};
+use bevy_rapier2d::prelude::Velocity;
 use crate::exceptions::RTGException;
 
-pub(crate) fn move_player(
+pub(crate) fn move_player_system(
     input: Res<ButtonInput<KeyCode>>,
-    time: Res<Time>,
-    player: Single<(&mut Transform, &mut AnimationState), (With<Player>, Without<Enemy>)>,
+    player: Single<(&mut Velocity, &mut AnimationState), (With<Player>, Without<Enemy>)>,
 ) -> Result<(), RTGException> {
-    let (mut transform, mut anim) = player.into_inner();
+    let (mut velocity, mut anim) = player.into_inner();
 
     let mut direction = Vec2::ZERO;
 
@@ -33,28 +33,13 @@ pub(crate) fn move_player(
 
     anim.moving = direction != Vec2::ZERO;
 
-    if anim.moving {
-        let delta = direction.normalize() * MOVE_SPEED * time.delta_secs();
-        if time.delta_secs() <= 0.0 {
-            return Err(RTGException::RTG_PLAYER_MOVEMENT_DELTA_TIME_INVALID);
-        }
-        transform.translation.x += delta.x;
-        transform.translation.y += delta.y;
-    }
+    *velocity = if anim.moving {
+        Velocity::linear(direction.normalize() * MOVE_SPEED)
+    } else {
+        Velocity::zero()
+    };
+
+
     Ok(())
 }
-
-pub(crate) fn move_player_system(
-    input: Res<ButtonInput<KeyCode>>,
-    time: Res<Time>,
-    player: Single<(&mut Transform, &mut AnimationState), (With<Player>, Without<Enemy>)>,
-) -> Result<(), RTGException> {
-     if let Err(e) = move_player(input, time, player) {
-         println!("{}", e.to_string());
-         return Err(e);
-     } else {
-         Ok(())
-     }
-}
-
 

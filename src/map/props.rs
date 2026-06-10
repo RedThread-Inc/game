@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use rand::{Rng, SeedableRng};
 use rand::rngs::SmallRng;
 use std::collections::HashSet;
+use bevy_rapier2d::prelude::{Collider, RigidBody};
+use crate::core::collision_groups::world_membership;
 use crate::map::{
     assets::TilemapHandles,
     generate::{TILE_SIZE, DEBUG_SEED},
@@ -16,22 +18,25 @@ struct PropDef {
     avoid_water_border: bool,
     height_in_tiles: u32,
     density: f32,
+    collider: Option<fn() -> Collider>,
 }
 
 const PROPS: &[PropDef] = &[
-    PropDef { bottom: "plant_1",      top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: false, height_in_tiles: 1, density: 0.005 },
-    PropDef { bottom: "plant_2",      top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: false, height_in_tiles: 1, density: 0.005 },
-    PropDef { bottom: "plant_3",      top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: false, height_in_tiles: 1, density: 0.005 },
-    PropDef { bottom: "plant_4",      top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: false, height_in_tiles: 1, density: 0.005 },
-    PropDef { bottom: "rock_1",       top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: true,  height_in_tiles: 1, density: 0.005 },
-    PropDef { bottom: "rock_2",       top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: true,  height_in_tiles: 1, density: 0.005 },
-    PropDef { bottom: "rock_3",       top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: true,  height_in_tiles: 1, density: 0.005 },
-    PropDef { bottom: "rock_4",       top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: true,  height_in_tiles: 1, density: 0.005 },
-    PropDef { bottom: "tree_stump_1", top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: false, height_in_tiles: 1, density: 0.005 },
-    PropDef { bottom: "tree_stump_2", top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: false, height_in_tiles: 1, density: 0.005 },
-    PropDef { bottom: "tree_stump_3", top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: false, height_in_tiles: 1, density: 0.005 },
+    PropDef { bottom: "plant_1",      top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: false, height_in_tiles: 1, density: 0.005, collider: None },
+    PropDef { bottom: "plant_2",      top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: false, height_in_tiles: 1, density: 0.005, collider: None },
+    PropDef { bottom: "plant_3",      top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: false, height_in_tiles: 1, density: 0.005, collider: None },
+    PropDef { bottom: "plant_4",      top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: false, height_in_tiles: 1, density: 0.005, collider: Some(|| Collider::ball(9.0)) },
 
-    PropDef { bottom: "small_tree_bottom", top: Some("small_tree_top"), allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: false, height_in_tiles: 2, density: 0.015 },
+    PropDef { bottom: "rock_1",       top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: true,  height_in_tiles: 1, density: 0.005, collider: None },
+    PropDef { bottom: "rock_2",       top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: true,  height_in_tiles: 1, density: 0.005, collider: Some(|| Collider::cuboid(10.0, 10.0)) },
+    PropDef { bottom: "rock_3",       top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: true,  height_in_tiles: 1, density: 0.005, collider: Some(|| Collider::cuboid(9.0, 8.0)) },
+    PropDef { bottom: "rock_4",       top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: true,  height_in_tiles: 1, density: 0.005, collider: Some(|| Collider::cuboid(9.0, 7.0)) },
+
+    PropDef { bottom: "tree_stump_1", top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: false, height_in_tiles: 1, density: 0.005, collider: Some(|| Collider::ball(8.0)) },
+    PropDef { bottom: "tree_stump_2", top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: false, height_in_tiles: 1, density: 0.005, collider: Some(|| Collider::ball(8.0)) },
+    PropDef { bottom: "tree_stump_3", top: None, allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: false, height_in_tiles: 1, density: 0.005, collider: Some(|| Collider::ball(8.0)) },
+
+    PropDef { bottom: "small_tree_bottom", top: Some("small_tree_top"), allowed_zones: &[TerrainZone::GreenGrass], avoid_water_border: false, height_in_tiles: 2, density: 0.015, collider: Some(|| Collider::capsule_y(7.0, 0.5)) },
 ];
 
 const BIG_TREE_DENSITY: f32 = 0.015;
@@ -110,6 +115,14 @@ fn spawn_big_trees(
             let wx = origin_x + x as f32 * TILE_SIZE + TILE_SIZE / 2.0;
             let wy = origin_y + y as f32 * TILE_SIZE + TILE_SIZE / 2.0;
 
+            commands.spawn((
+                Transform::from_xyz(wx + TILE_SIZE / 2.0, wy - TILE_SIZE * 0.25, 0.0),
+                GlobalTransform::default(),
+                RigidBody::Fixed,
+                world_membership(),
+                Collider::ball(8.0),
+            ));
+
             for (name, dx, dy) in [
                 (bl, 0.0,       0.0      ),
                 (br, TILE_SIZE, 0.0      ),
@@ -167,10 +180,18 @@ fn spawn_props(
                 let wy = origin_y + y as f32 * TILE_SIZE + TILE_SIZE / 2.0;
 
                 if let Some(idx) = TILEMAP.sprite_index(prop.bottom) {
-                    commands.spawn((
+                    let mut entity = commands.spawn((
                         handles.sprite(idx),
                         Transform::from_xyz(wx, wy, 2.0),
                     ));
+
+                    if let Some(collider_fn) = prop.collider {
+                        entity.insert((
+                            RigidBody::Fixed,
+                            collider_fn(),
+                            world_membership(),
+                        ));
+                    }
                 }
                 if let Some(top_name) = prop.top {
                     if let Some(idx) = TILEMAP.sprite_index(top_name) {

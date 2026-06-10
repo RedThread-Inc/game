@@ -1,7 +1,7 @@
 use crate::player::animate::animate_player_system;
 use crate::player::fight::{player_fight_system, PlayerDamageSoundState};
 use crate::player::movement::move_player_system;
-use crate::player::projectile::{attach_fire_cooldown, move_projectiles_system, shoot_projectile_system};
+use crate::player::projectile::{attach_fire_cooldown, move_projectiles_system, shoot_projectile_system, player_projectile_hit_system};
 use crate::player::spawn::spawn_player_system;
 use bevy::prelude::*;
 use crate::{GameState, InGameState};
@@ -36,6 +36,7 @@ impl Plugin for PlayerPlugin {
                 shoot_projectile_system.pipe(log_rtg_exception),
                 move_projectiles_system.pipe(log_rtg_exception),
                 player_fight_system.pipe(log_rtg_exception),
+                player_projectile_hit_system,
             ).run_if(in_state(GameState::InGame))
                 .run_if(in_state(InGameState::Playing)));
     }
