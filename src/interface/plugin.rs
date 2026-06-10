@@ -3,7 +3,7 @@ use crate::fight::enemy_hits_player_system;
 use crate::GameState;
 use crate::interface::player_health_bar::*;
 
-pub struct InterfacePlugin;
+pub(crate) struct InterfacePlugin;
 
 impl Plugin for InterfacePlugin {
     fn build(&self, app: &mut App) {
