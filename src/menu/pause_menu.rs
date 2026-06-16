@@ -2,6 +2,7 @@ use bevy::ecs::relationship::RelatedSpawnerCommands;
 use bevy::prelude::*;
 use crate::InGameState;
 use crate::GameState;
+use crate::settings::{t, GameSettings};
 use bevy::app::AppExit;
 
 pub struct PauseMenuPlugin;
@@ -40,10 +41,11 @@ const WOOD_PRESSED: Color = Color::srgb(0.259, 0.153, 0.059);
 
 fn toggle_pause(
     keys: Res<ButtonInput<KeyCode>>,
+    settings: Res<GameSettings>,
     state: Res<State<InGameState>>,
     mut next_state: ResMut<NextState<InGameState>>,
 ) {
-    if keys.just_pressed(KeyCode::Escape) {
+    if keys.just_pressed(settings.key_pause) {
         match state.get() {
             InGameState::Playing => next_state.set(InGameState::Paused),
             InGameState::Paused => next_state.set(InGameState::Playing),
@@ -52,7 +54,8 @@ fn toggle_pause(
     }
 }
 
-fn setup_pause_menu(mut commands: Commands) {
+fn setup_pause_menu(mut commands: Commands, settings: Res<GameSettings>) {
+    let lang = &settings.language;
     commands
         .spawn((
             Node {
@@ -86,7 +89,7 @@ fn setup_pause_menu(mut commands: Commands) {
                     ));
 
                     col.spawn((
-                        Text::new("PAUSE"),
+                        Text::new(t(lang, "pause_title")),
                         TextFont { font_size: 64.0, ..default() },
                         TextColor(INK),
                     ));
@@ -101,9 +104,9 @@ fn setup_pause_menu(mut commands: Commands) {
                         BackgroundColor(GOLD),
                     ));
 
-                    spawn_pause_button(col, "Reprendre", PauseButton::Resume);
-                    spawn_pause_button(col, "Recommencer", PauseButton::Restart);
-                    spawn_pause_button(col, "Menu principal", PauseButton::MainMenu);
+                    spawn_pause_button(col, t(lang, "pause_resume"),    PauseButton::Resume);
+                    spawn_pause_button(col, t(lang, "pause_restart"),   PauseButton::Restart);
+                    spawn_pause_button(col, t(lang, "pause_main_menu"), PauseButton::MainMenu);
 
                     col.spawn((
                         Node {
@@ -115,7 +118,7 @@ fn setup_pause_menu(mut commands: Commands) {
                         BackgroundColor(GOLD),
                     ));
 
-                    spawn_pause_button(col, "Abandonner la quete", PauseButton::Quit);
+                    spawn_pause_button(col, t(lang, "pause_quit"), PauseButton::Quit);
                 });
         });
 }

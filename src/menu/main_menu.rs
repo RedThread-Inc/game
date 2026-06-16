@@ -1,6 +1,7 @@
 use bevy::ecs::relationship::RelatedSpawnerCommands;
 use bevy::prelude::*;
 use crate::GameState;
+use crate::settings::{t, GameSettings};
 use bevy::app::AppExit;
 use crate::round::RoundStartedEvent;
 
@@ -42,6 +43,7 @@ fn stop_menu_music(
 #[derive(Component)]
 enum MenuButton {
     Play,
+    Settings,
     Quit,
 }
 
@@ -69,7 +71,8 @@ const FLAME_CORE:   Color = Color::srgb(1.00, 0.95, 0.40);
 const FLAME_MID:    Color = Color::srgb(1.00, 0.55, 0.10);
 const FLAME_OUTER:  Color = Color::srgb(0.80, 0.20, 0.05);
 
-fn setup_menu(mut commands: Commands) {
+fn setup_menu(mut commands: Commands, settings: Res<GameSettings>) {
+    let lang = &settings.language;
     commands
         .spawn((
             Node {
@@ -121,8 +124,9 @@ fn setup_menu(mut commands: Commands) {
                         BackgroundColor(GOLD),
                     ));
 
-                    spawn_button(col, "Partir a l'aventure", MenuButton::Play);
-                    spawn_button(col, "Abandonner la quete", MenuButton::Quit);
+                    spawn_button(col, t(lang, "menu_play"),     MenuButton::Play);
+                    spawn_button(col, t(lang, "menu_settings"), MenuButton::Settings);
+                    spawn_button(col, t(lang, "menu_quit"),     MenuButton::Quit);
 
                     col.spawn((
                         Node {
@@ -299,8 +303,9 @@ fn handle_buttons(
             Interaction::Pressed  => {
                 *color = BackgroundColor(WOOD_PRESSED);
                 match button {
-                    MenuButton::Play => next_state.set(GameState::InGame),
-                    MenuButton::Quit => { app_exit.write(AppExit::Success); }
+                    MenuButton::Play     => next_state.set(GameState::InGame),
+                    MenuButton::Settings => next_state.set(GameState::Settings),
+                    MenuButton::Quit     => { app_exit.write(AppExit::Success); }
                 }
             }
         }

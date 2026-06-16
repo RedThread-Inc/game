@@ -10,6 +10,7 @@ mod interface;
 mod exceptions;
 mod menu;
 mod round;
+mod settings;
 mod upgrade;
 mod boss;
 
@@ -27,6 +28,7 @@ pub enum GameState {
     InGame,
     Restarting,
     GameOver,
+    Settings,
 }
 
 #[derive(SubStates, Debug, Clone, PartialEq, Eq, Hash, Default)]

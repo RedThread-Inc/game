@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use bevy::app::AppExit;
 
 use crate::GameState;
+use crate::settings::{t, GameSettings};
 
 pub struct DeathMenuPlugin;
 
@@ -37,7 +38,8 @@ const WOOD_NORMAL:  Color = Color::srgb(0.400, 0.243, 0.102);
 const WOOD_HOVERED: Color = Color::srgb(0.576, 0.365, 0.161);
 const WOOD_PRESSED: Color = Color::srgb(0.259, 0.153, 0.059);
 
-fn setup_death_menu(mut commands: Commands) {
+fn setup_death_menu(mut commands: Commands, settings: Res<GameSettings>) {
+    let lang = &settings.language;
     commands
         .spawn((
             Node {
@@ -77,19 +79,19 @@ fn setup_death_menu(mut commands: Commands) {
                     ));
 
                     col.spawn((
-                        Text::new("Vous etes mort..."),
+                        Text::new(t(lang, "death_subtitle")),
                         TextFont { font_size: 20.0, ..default() },
                         TextColor(INK),
                     ));
 
                     separator(col);
 
-                    spawn_death_button(col, "Retenter l'aventure",       DeathButton::Retry);
-                    spawn_death_button(col, "Menu principal",  DeathButton::MainMenu);
+                    spawn_death_button(col, t(lang, "death_retry"),     DeathButton::Retry);
+                    spawn_death_button(col, t(lang, "death_main_menu"), DeathButton::MainMenu);
 
                     separator(col);
 
-                    spawn_death_button(col, "Abandonner la quete", DeathButton::Quit);
+                    spawn_death_button(col, t(lang, "death_quit"), DeathButton::Quit);
                 });
         });
 }
