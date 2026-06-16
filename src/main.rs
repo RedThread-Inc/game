@@ -9,6 +9,7 @@ mod map;
 mod interface;
 mod exceptions;
 mod menu;
+mod locale;
 mod round;
 mod settings;
 mod upgrade;

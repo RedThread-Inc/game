@@ -3,7 +3,9 @@ use bevy::prelude::*;
 use bevy::app::AppExit;
 
 use crate::GameState;
-use crate::settings::{t, GameSettings};
+use crate::engine::GameFont;
+use crate::locale::t;
+use crate::settings::GameSettings;
 
 pub struct DeathMenuPlugin;
 
@@ -38,8 +40,9 @@ const WOOD_NORMAL:  Color = Color::srgb(0.400, 0.243, 0.102);
 const WOOD_HOVERED: Color = Color::srgb(0.576, 0.365, 0.161);
 const WOOD_PRESSED: Color = Color::srgb(0.259, 0.153, 0.059);
 
-fn setup_death_menu(mut commands: Commands, settings: Res<GameSettings>) {
+fn setup_death_menu(mut commands: Commands, settings: Res<GameSettings>, font: Res<GameFont>) {
     let lang = &settings.language;
+    let f = &font.0;
     commands
         .spawn((
             Node {
@@ -68,30 +71,30 @@ fn setup_death_menu(mut commands: Commands, settings: Res<GameSettings>) {
                 .with_children(|col| {
                     col.spawn((
                         Text::new("- * -"),
-                        TextFont { font_size: 24.0, ..default() },
+                        TextFont { font: f.clone(), font_size: 24.0, ..default() },
                         TextColor(GOLD),
                     ));
 
                     col.spawn((
                         Text::new("GAME OVER"),
-                        TextFont { font_size: 64.0, ..default() },
+                        TextFont { font: f.clone(), font_size: 64.0, ..default() },
                         TextColor(DARK_RED),
                     ));
 
                     col.spawn((
                         Text::new(t(lang, "death_subtitle")),
-                        TextFont { font_size: 20.0, ..default() },
+                        TextFont { font: f.clone(), font_size: 20.0, ..default() },
                         TextColor(INK),
                     ));
 
                     separator(col);
 
-                    spawn_death_button(col, t(lang, "death_retry"),     DeathButton::Retry);
-                    spawn_death_button(col, t(lang, "death_main_menu"), DeathButton::MainMenu);
+                    spawn_death_button(col, t(lang, "death_retry"),     DeathButton::Retry,    f);
+                    spawn_death_button(col, t(lang, "death_main_menu"), DeathButton::MainMenu, f);
 
                     separator(col);
 
-                    spawn_death_button(col, t(lang, "death_quit"), DeathButton::Quit);
+                    spawn_death_button(col, t(lang, "death_quit"), DeathButton::Quit, f);
                 });
         });
 }
@@ -112,6 +115,7 @@ fn spawn_death_button(
     parent: &mut RelatedSpawnerCommands<ChildOf>,
     label: &str,
     button: DeathButton,
+    font: &Handle<Font>,
 ) {
     parent
         .spawn((
@@ -143,7 +147,7 @@ fn spawn_death_button(
                 .with_children(|btn| {
                     btn.spawn((
                         Text::new(label),
-                        TextFont { font_size: 22.0, ..default() },
+                        TextFont { font: font.clone(), font_size: 22.0, ..default() },
                         TextColor(GOLD),
                     ));
                 });

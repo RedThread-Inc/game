@@ -1,7 +1,9 @@
 use bevy::ecs::relationship::RelatedSpawnerCommands;
 use bevy::prelude::*;
 use crate::GameState;
-use crate::settings::{key_name, t, FpsLimit, GameSettings, KeyAction, Language};
+use crate::engine::GameFont;
+use crate::locale::{key_name, t};
+use crate::settings::{FpsLimit, GameSettings, KeyAction, Language};
 
 pub struct SettingsMenuPlugin;
 
@@ -56,8 +58,9 @@ const WOOD_PRESSED: Color = Color::srgb(0.259, 0.153, 0.059);
 const SELECTED:     Color = Color::srgb(0.65, 0.45, 0.05);
 const AWAITING:     Color = Color::srgb(0.15, 0.35, 0.55);
 
-fn setup_settings_menu(mut commands: Commands, settings: Res<GameSettings>) {
+fn setup_settings_menu(mut commands: Commands, settings: Res<GameSettings>, font: Res<GameFont>) {
     let lang = &settings.language;
+    let f = &font.0;
 
     commands.spawn((
         Node {
@@ -86,33 +89,33 @@ fn setup_settings_menu(mut commands: Commands, settings: Res<GameSettings>) {
         .with_children(|col| {
             col.spawn((
                 Text::new("- * -"),
-                TextFont { font_size: 22.0, ..default() },
+                TextFont { font: f.clone(), font_size: 22.0, ..default() },
                 TextColor(GOLD),
             ));
             col.spawn((
                 Text::new(t(lang, "settings_title")),
-                TextFont { font_size: 52.0, ..default() },
+                TextFont { font: f.clone(), font_size: 52.0, ..default() },
                 TextColor(INK),
             ));
 
             separator(col);
-            section_label(col, t(lang, "settings_fps"));
-            spawn_fps_row(col, &settings);
+            section_label(col, t(lang, "settings_fps"), f);
+            spawn_fps_row(col, &settings, f);
 
             separator(col);
-            section_label(col, t(lang, "settings_controls"));
-            spawn_keybind_row(col, t(lang, "key_left"),  KeyAction::Left,  key_name(settings.key_left));
-            spawn_keybind_row(col, t(lang, "key_right"), KeyAction::Right, key_name(settings.key_right));
-            spawn_keybind_row(col, t(lang, "key_up"),    KeyAction::Up,    key_name(settings.key_up));
-            spawn_keybind_row(col, t(lang, "key_down"),  KeyAction::Down,  key_name(settings.key_down));
-            spawn_keybind_row(col, t(lang, "key_pause"), KeyAction::Pause, key_name(settings.key_pause));
+            section_label(col, t(lang, "settings_controls"), f);
+            spawn_keybind_row(col, t(lang, "key_left"),  KeyAction::Left,  key_name(settings.key_left),  f);
+            spawn_keybind_row(col, t(lang, "key_right"), KeyAction::Right, key_name(settings.key_right), f);
+            spawn_keybind_row(col, t(lang, "key_up"),    KeyAction::Up,    key_name(settings.key_up),    f);
+            spawn_keybind_row(col, t(lang, "key_down"),  KeyAction::Down,  key_name(settings.key_down),  f);
+            spawn_keybind_row(col, t(lang, "key_pause"), KeyAction::Pause, key_name(settings.key_pause), f);
 
             separator(col);
-            section_label(col, t(lang, "settings_language"));
-            spawn_language_row(col, &settings);
+            section_label(col, t(lang, "settings_language"), f);
+            spawn_language_row(col, &settings, f);
 
             separator(col);
-            spawn_back_button(col, t(lang, "settings_back"));
+            spawn_back_button(col, t(lang, "settings_back"), f);
         });
     });
 }
@@ -129,15 +132,15 @@ fn separator(col: &mut RelatedSpawnerCommands<ChildOf>) {
     ));
 }
 
-fn section_label(col: &mut RelatedSpawnerCommands<ChildOf>, label: &str) {
+fn section_label(col: &mut RelatedSpawnerCommands<ChildOf>, label: &str, font: &Handle<Font>) {
     col.spawn((
         Text::new(label),
-        TextFont { font_size: 16.0, ..default() },
+        TextFont { font: font.clone(), font_size: 16.0, ..default() },
         TextColor(GOLD),
     ));
 }
 
-fn spawn_fps_row(col: &mut RelatedSpawnerCommands<ChildOf>, settings: &GameSettings) {
+fn spawn_fps_row(col: &mut RelatedSpawnerCommands<ChildOf>, settings: &GameSettings, font: &Handle<Font>) {
     let options = [FpsLimit::Fps30, FpsLimit::Fps60, FpsLimit::Fps120, FpsLimit::Unlimited];
 
     col.spawn(Node {
@@ -178,7 +181,7 @@ fn spawn_fps_row(col: &mut RelatedSpawnerCommands<ChildOf>, settings: &GameSetti
                 .with_children(|btn| {
                     btn.spawn((
                         Text::new(label),
-                        TextFont { font_size: 18.0, ..default() },
+                        TextFont { font: font.clone(), font_size: 18.0, ..default() },
                         TextColor(GOLD),
                     ));
                 });
@@ -192,6 +195,7 @@ fn spawn_keybind_row(
     action_label: &str,
     action: KeyAction,
     key: &str,
+    font: &Handle<Font>,
 ) {
     col.spawn(Node {
         flex_direction: FlexDirection::Row,
@@ -203,7 +207,7 @@ fn spawn_keybind_row(
     .with_children(|row| {
         row.spawn((
             Text::new(action_label),
-            TextFont { font_size: 18.0, ..default() },
+            TextFont { font: font.clone(), font_size: 18.0, ..default() },
             TextColor(INK),
         ));
 
@@ -234,7 +238,7 @@ fn spawn_keybind_row(
             .with_children(|btn| {
                 btn.spawn((
                     Text::new(key),
-                    TextFont { font_size: 18.0, ..default() },
+                    TextFont { font: font.clone(), font_size: 18.0, ..default() },
                     TextColor(GOLD),
                     KeybindLabel(action),
                 ));
@@ -243,8 +247,8 @@ fn spawn_keybind_row(
     });
 }
 
-fn spawn_language_row(col: &mut RelatedSpawnerCommands<ChildOf>, settings: &GameSettings) {
-    let options = [(Language::French, "FR"), (Language::English, "EN")];
+fn spawn_language_row(col: &mut RelatedSpawnerCommands<ChildOf>, settings: &GameSettings, font: &Handle<Font>) {
+    let options = [(Language::French, "FR"), (Language::English, "EN"), (Language::Russian, "RU")];
 
     col.spawn(Node {
         flex_direction: FlexDirection::Row,
@@ -283,7 +287,7 @@ fn spawn_language_row(col: &mut RelatedSpawnerCommands<ChildOf>, settings: &Game
                 .with_children(|btn| {
                     btn.spawn((
                         Text::new(label),
-                        TextFont { font_size: 18.0, ..default() },
+                        TextFont { font: font.clone(), font_size: 18.0, ..default() },
                         TextColor(GOLD),
                     ));
                 });
@@ -292,7 +296,7 @@ fn spawn_language_row(col: &mut RelatedSpawnerCommands<ChildOf>, settings: &Game
     });
 }
 
-fn spawn_back_button(col: &mut RelatedSpawnerCommands<ChildOf>, label: &str) {
+fn spawn_back_button(col: &mut RelatedSpawnerCommands<ChildOf>, label: &str, font: &Handle<Font>) {
     col.spawn((
         Node {
             width: Val::Px(200.0),
@@ -320,7 +324,7 @@ fn spawn_back_button(col: &mut RelatedSpawnerCommands<ChildOf>, label: &str) {
         .with_children(|btn| {
             btn.spawn((
                 Text::new(label),
-                TextFont { font_size: 20.0, ..default() },
+                TextFont { font: font.clone(), font_size: 20.0, ..default() },
                 TextColor(GOLD),
             ));
         });

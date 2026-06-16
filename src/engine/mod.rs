@@ -21,6 +21,16 @@ use crate::boss::plugin::BossPlugin;
 use bevy_rapier2d::prelude::*;
 use crate::exceptions::log_rtg_exception;
 
+#[derive(Resource, Clone)]
+pub(crate) struct GameFont(pub(crate) Handle<Font>);
+
+impl FromWorld for GameFont {
+    fn from_world(world: &mut World) -> Self {
+        let asset_server = world.resource::<AssetServer>();
+        GameFont(asset_server.load("fonts/Ubuntu-R.ttf"))
+    }
+}
+
 #[derive(Resource)]
 struct FrameLimiter(std::time::Instant);
 
@@ -78,6 +88,7 @@ pub(crate) fn init_app() {
         .init_resource::<SoundCooldowns>()
         .init_resource::<GameSettings>()
         .init_resource::<FrameLimiter>()
+        .init_resource::<GameFont>()
         .add_systems(Update, tick_cooldowns)
         .add_systems(Last, apply_frame_limit)
         .add_plugins((PlayerPlugin, EnemyPlugin, InterfacePlugin, MainMenuPlugin, PauseMenuPlugin, DeathMenuPlugin, SettingsMenuPlugin, RoundPlugin, UpgradePlugin, BossPlugin))
