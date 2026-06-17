@@ -17,6 +17,7 @@ use crate::menu::pause_menu::PauseMenuPlugin;
 use crate::menu::death_menu::DeathMenuPlugin;
 use crate::boss::plugin::BossPlugin;
 use bevy_rapier2d::prelude::*;
+use crate::exceptions::log_rtg_exception;
 
 pub(crate) fn cleanup_game(mut commands: Commands, query: Query<Entity, With<InGameEntity>>) {
     for entity in &query {
@@ -63,7 +64,7 @@ pub(crate) fn init_app() {
                 let grid_y = (window.height() / TILE_SIZE).floor() as u32;
             },
         )
-        .add_systems(OnEnter(GameState::InGame), setup_generator)
+        .add_systems(OnEnter(GameState::InGame), setup_generator.pipe(log_rtg_exception))
         .add_systems(OnExit(GameState::InGame), cleanup_game)
         .add_systems(OnEnter(GameState::Restarting), cleanup_game)
         .add_systems(OnEnter(GameState::Restarting),

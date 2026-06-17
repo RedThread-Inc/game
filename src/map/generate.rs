@@ -42,12 +42,13 @@ pub(crate) fn setup_generator(
     asset_server: Res<AssetServer>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     windows: Query<&Window, With<PrimaryWindow>>,
-) {
+) -> Result<(), RTGException> {
     let window = windows
-        .single().map_err(|e| RTGException::REDTHREAD_FAILED_TO_GENERATE_MAP_MISSING_GAME_WINDOW);
+        .single()
+        .map_err(|_| RTGException::REDTHREAD_FAILED_TO_GENERATE_MAP_MISSING_GAME_WINDOW)?;
 
-    let grid_x = (window.clone().unwrap().width() / TILE_SIZE).floor() as u32;
-    let grid_y = (window.unwrap().height() / TILE_SIZE).floor() as u32;
+    let grid_x = (window.width() / TILE_SIZE).floor() as u32;
+    let grid_y = (window.height() / TILE_SIZE).floor() as u32;
 
     let height_map = HeightMap::generate(grid_x, grid_y, DEBUG_SEED, PERLIN_SCALE);
     let handles =
@@ -89,6 +90,8 @@ pub(crate) fn setup_generator(
     spawn_all_props(&mut commands, &handles, &height_map, grid_x, grid_y, origin_x, origin_y);
 
     commands.insert_resource(TerrainHeightMap(height_map));
+
+    Ok(())
 }
 
 
