@@ -43,6 +43,6 @@ pub(crate) fn update_player_health_bar(
         return;
     };
 
-    let health_percent = (player.health / 100.0).clamp(0.0, 1.0);
+    let health_percent = (player.health / player.max_health).clamp(0.0, 1.0);
     bar.width = Val::Percent(health_percent * 100.0);
 }
