@@ -1,8 +1,11 @@
-use crate::boss::{Boss, BossProjectile};
+use crate::boss::{Boss, BossProjectile, BOSS_SCALE, BOSS_TILE_SIZE};
 use crate::player::Player;
 use bevy::prelude::*;
 
-const BOSS_HITBOX: Vec2 = Vec2::new(2.0, 2.0);
+pub(crate) const BOSS_HITBOX: Vec2 = Vec2::new(
+    BOSS_TILE_SIZE as f32 * BOSS_SCALE * 0.6,
+    BOSS_TILE_SIZE as f32 * BOSS_SCALE * 0.6,
+);
 const PLAYER_HITBOX: Vec2 = Vec2::new(20.0, 20.0);
 const PROJECTILE_HITBOX: Vec2 = Vec2::new(16.0, 16.0);
 
