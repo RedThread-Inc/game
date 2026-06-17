@@ -69,7 +69,8 @@ pub(crate) fn setup_generator(
 
             let mut entity = commands.spawn((
                 handles.sprite(base_sprite_id),
-                Transform::from_xyz(world_x, world_y, 0.0)
+                Transform::from_xyz(world_x, world_y, 0.0),
+                InGameEntity,
             ));
 
             if zone == TerrainZone::Water {
@@ -136,6 +137,7 @@ fn spawn_transition(commands: &mut Commands, handles: &TilemapHandles, height_ma
             commands.spawn((
                 handles.sprite(idx),
                 Transform::from_xyz(world_x, world_y, 1.0),
+                InGameEntity,
             ));
         }
     };
