@@ -4,6 +4,7 @@ use crate::round::{RoundStartedEvent, RoundState};
 use crate::upgrade::{PlayerUpgrades, Upgrade};
 use crate::InGameState;
 use rand::seq::SliceRandom;
+use crate::player::Player;
 
 const ALL_UPGRADES: [Upgrade; 6] = [
     Upgrade::ExtraProjectile,
@@ -146,12 +147,14 @@ pub(crate) fn handle_upgrade_buttons(
     mut round: ResMut<RoundState>,
     mut next_state: ResMut<NextState<InGameState>>,
     mut round_started: MessageWriter<RoundStartedEvent>,
+    mut player_query: Query<&mut Player>,
 ) {
     for (interaction, mut color, button) in &mut interaction_query {
         match interaction {
             Interaction::Pressed => {
                 *color = BackgroundColor(WOOD_PRESSED);
                 upgrades.apply(button.0);
+                apply_upgrade_to_player(button.0, &mut player_query);
                 round.advance();
                 round_started.write(RoundStartedEvent);
                 next_state.set(InGameState::Playing);
@@ -159,6 +162,15 @@ pub(crate) fn handle_upgrade_buttons(
             Interaction::Hovered => *color = BackgroundColor(WOOD_HOVERED),
             Interaction::None    => *color = BackgroundColor(WOOD_NORMAL),
         }
+    }
+}
+
+fn apply_upgrade_to_player(upgrade: Upgrade, player_query: &mut Query<&mut Player>) {
+    const HEALTH_PER_LEVEL: f32 = 25.0;
+    let Ok(mut player) = player_query.single_mut() else { return };
+    if let Upgrade::MoreHealth = upgrade {
+        player.max_health += HEALTH_PER_LEVEL;
+        player.health += HEALTH_PER_LEVEL;
     }
 }
 
