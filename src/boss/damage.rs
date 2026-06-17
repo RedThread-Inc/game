@@ -28,8 +28,6 @@ pub(crate) fn boss_contact_damage_system(
         return;
     };
 
-    player.damage_cooldown.tick(time.delta());
-
     if !player.damage_cooldown.just_finished() {
         return;
     }

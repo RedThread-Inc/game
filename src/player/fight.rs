@@ -16,6 +16,13 @@ pub(crate) struct PlayerDamageSoundState {
     use_first: bool,
 }
 
+pub(crate) fn tick_player_cooldowns(time: Res<Time>, mut player_query: Query<&mut Player>) {
+    if let Ok(mut player) = player_query.single_mut() {
+        player.damage_cooldown.tick(time.delta());
+        player.attack_cooldown.tick(time.delta());
+    }
+}
+
 fn resolve_boss_melee(player: &mut Player, boss: &mut Boss, distance: f32) -> bool {
     if distance > BOSS_MELEE_RANGE {
         return false;
