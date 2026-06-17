@@ -1,6 +1,6 @@
 use bevy::ecs::relationship::RelatedSpawnerCommands;
 use bevy::prelude::*;
-use crate::round::RoundState;
+use crate::round::{RoundStartedEvent, RoundState};
 use crate::upgrade::{PlayerUpgrades, Upgrade};
 use crate::InGameState;
 use rand::seq::SliceRandom;
@@ -145,6 +145,7 @@ pub(crate) fn handle_upgrade_buttons(
     mut upgrades: ResMut<PlayerUpgrades>,
     mut round: ResMut<RoundState>,
     mut next_state: ResMut<NextState<InGameState>>,
+    mut round_started: MessageWriter<RoundStartedEvent>,
 ) {
     for (interaction, mut color, button) in &mut interaction_query {
         match interaction {
@@ -152,6 +153,7 @@ pub(crate) fn handle_upgrade_buttons(
                 *color = BackgroundColor(WOOD_PRESSED);
                 upgrades.apply(button.0);
                 round.advance();
+                round_started.write(RoundStartedEvent);
                 next_state.set(InGameState::Playing);
             }
             Interaction::Hovered => *color = BackgroundColor(WOOD_HOVERED),
