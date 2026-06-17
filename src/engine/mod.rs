@@ -56,7 +56,6 @@ pub(crate) fn init_app() {
         .init_resource::<SoundCooldowns>()
         .add_systems(Update, tick_cooldowns)
         .add_plugins((PlayerPlugin, EnemyPlugin, InterfacePlugin, MainMenuPlugin, PauseMenuPlugin, DeathMenuPlugin, RoundPlugin, UpgradePlugin, BossPlugin))
-        .add_plugins(ProcGenSimplePlugin::<Cartesian3D, Sprite>::default())
         .add_systems(Startup, setup_camera)
         .add_systems(Startup, |windows: Query<&Window, With<PrimaryWindow>>| {
                 let window = windows.single().expect("Primary window must exist");
