@@ -57,12 +57,6 @@ pub(crate) fn init_app() {
         .add_systems(Update, tick_cooldowns)
         .add_plugins((PlayerPlugin, EnemyPlugin, InterfacePlugin, MainMenuPlugin, PauseMenuPlugin, DeathMenuPlugin, RoundPlugin, UpgradePlugin, BossPlugin))
         .add_systems(Startup, setup_camera)
-        .add_systems(Startup, |windows: Query<&Window, With<PrimaryWindow>>| {
-                let window = windows.single().expect("Primary window must exist");
-                let grid_x = (window.width() / TILE_SIZE).floor() as u32;
-                let grid_y = (window.height() / TILE_SIZE).floor() as u32;
-            },
-        )
         .add_systems(OnEnter(GameState::InGame), setup_generator.pipe(log_rtg_exception))
         .add_systems(OnExit(GameState::InGame), cleanup_game)
         .add_systems(OnEnter(GameState::Restarting), cleanup_game)
