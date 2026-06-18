@@ -91,6 +91,27 @@ pub(crate) fn setup_generator(
 
     commands.insert_resource(TerrainHeightMap(height_map));
 
+    let map_w = grid_x as f32 * TILE_SIZE;
+    let map_h = grid_y as f32 * TILE_SIZE;
+    let thickness = TILE_SIZE;
+
+    let borders = [
+        (0.0,                    map_h / 2.0,   map_w / 2.0 + thickness, thickness / 2.0), // haut
+        (0.0,                   -map_h / 2.0,   map_w / 2.0 + thickness, thickness / 2.0), // bas
+        (-map_w / 2.0,           0.0,           thickness / 2.0,          map_h / 2.0),     // gauche
+        ( map_w / 2.0,           0.0,           thickness / 2.0,          map_h / 2.0),     // droite
+    ];
+
+    for (x, y, hw, hh) in borders {
+        commands.spawn((
+            Transform::from_xyz(x, y, 0.0),
+            RigidBody::Fixed,
+            Collider::cuboid(hw, hh),
+            world_membership(),
+            InGameEntity,
+        ));
+    }
+
     Ok(())
 }
 
