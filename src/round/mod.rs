@@ -14,6 +14,9 @@ pub(crate) struct RoundState {
     spawned: bool,
 }
 
+#[derive(Message)]
+pub(crate) struct RoundStartedEvent;
+
 impl Default for RoundState {
     fn default() -> Self {
         Self {

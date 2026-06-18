@@ -2,6 +2,7 @@ use bevy::ecs::relationship::RelatedSpawnerCommands;
 use bevy::prelude::*;
 use crate::GameState;
 use bevy::app::AppExit;
+use crate::round::RoundStartedEvent;
 
 pub struct MainMenuPlugin;
 
@@ -289,6 +290,7 @@ fn handle_buttons(
     mut interaction_query: Query<(&Interaction, &mut BackgroundColor, &MenuButton), Changed<Interaction>>,
     mut next_state: ResMut<NextState<GameState>>,
     mut app_exit: MessageWriter<AppExit>,
+    mut round_started: MessageWriter<RoundStartedEvent>,
 ) {
     for (interaction, mut color, button) in &mut interaction_query {
         match interaction {

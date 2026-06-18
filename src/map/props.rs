@@ -4,6 +4,7 @@ use rand::rngs::SmallRng;
 use std::collections::HashSet;
 use bevy_rapier2d::prelude::{Collider, RigidBody};
 use crate::core::collision_groups::world_membership;
+use crate::InGameEntity;
 use crate::map::{
     assets::TilemapHandles,
     generate::{TILE_SIZE, DEBUG_SEED},
@@ -121,6 +122,7 @@ fn spawn_big_trees(
                 RigidBody::Fixed,
                 world_membership(),
                 Collider::ball(8.0),
+                InGameEntity,
             ));
 
             for (name, dx, dy) in [
@@ -133,6 +135,7 @@ fn spawn_big_trees(
                     commands.spawn((
                         handles.sprite(idx),
                         Transform::from_xyz(wx + dx, wy + dy, 2.0),
+                        InGameEntity,
                     ));
                 }
             }
@@ -183,6 +186,7 @@ fn spawn_props(
                     let mut entity = commands.spawn((
                         handles.sprite(idx),
                         Transform::from_xyz(wx, wy, 2.0),
+                        InGameEntity,
                     ));
 
                     if let Some(collider_fn) = prop.collider {
@@ -198,6 +202,7 @@ fn spawn_props(
                         commands.spawn((
                             handles.sprite(idx),
                             Transform::from_xyz(wx, wy + TILE_SIZE, 2.0),
+                            InGameEntity,
                         ));
                     }
                 }

@@ -8,12 +8,38 @@ use crate::enemy::death::HealthPotion;
 
 const MELEE_RANGE: f32 = 25.0;
 const BOSS_MELEE_RANGE: f32 = 120.0;
-
 const PICKUP_RADIUS: f32 = 30.0;
+const BOSS_CONTACT_DAMAGE: f32 = 20.0;
 
 #[derive(Resource, Default)]
 pub(crate) struct PlayerDamageSoundState {
     use_first: bool,
+}
+
+pub(crate) fn tick_player_cooldowns(time: Res<Time>, mut player_query: Query<&mut Player>) {
+    if let Ok(mut player) = player_query.single_mut() {
+        player.damage_cooldown.tick(time.delta());
+        player.attack_cooldown.tick(time.delta());
+    }
+}
+
+fn resolve_boss_melee(player: &mut Player, boss: &mut Boss, distance: f32) -> bool {
+    if distance > BOSS_MELEE_RANGE {
+        return false;
+    }
+
+    if player.attack_cooldown.is_finished() {
+        boss.health -= player.damage;
+        player.attack_cooldown.reset();
+    }
+
+    if player.damage_cooldown.is_finished() {
+        player.health -= BOSS_CONTACT_DAMAGE;
+        player.damage_cooldown.reset();
+        return true;
+    }
+
+    false
 }
 
 pub(crate) fn player_fight_system(
@@ -57,49 +83,13 @@ pub(crate) fn player_fight_system(
 
     // — Boss —
     for (boss_transform, mut boss) in boss_query.iter_mut() {
-        println!("BOSS TROUVÉ dans la query, health={}", boss.health);
-
         let distance = player_transform
             .translation
             .truncate()
             .distance(boss_transform.translation.truncate());
 
-        println!("distance={:.1}, attack_finished={}, damage_finished={}",
-                 distance,
-                 player.attack_cooldown.is_finished(),
-                 player.damage_cooldown.is_finished()
-        );
-        let distance = player_transform
-            .translation
-            .truncate()
-            .distance(boss_transform.translation.truncate());
-
-        if distance > BOSS_MELEE_RANGE {
-            continue;
-        }
-
-        if distance > BOSS_MELEE_RANGE {
-            println!("→ trop loin, skip ({})", distance);
-            continue;
-        }
-
-        println!("→ DANS LA RANGE, on attaque !");
-
-        if player.attack_cooldown.is_finished() {
-            boss.health -= player.damage;
-            player.attack_cooldown.reset();
-            println!("→ DÉGÂTS infligés ! health={}", boss.health);
-        }
-
-        if player.damage_cooldown.is_finished() {
-            player.health -= 20.0;
-            player.damage_cooldown.reset();
+        if resolve_boss_melee(&mut player, &mut boss, distance) {
             play_damage_sound(&mut commands, &asset_server, &mut sound_state);
-        }
-
-        if player.attack_cooldown.is_finished() {
-            boss.health -= player.damage;
-            player.attack_cooldown.reset();
         }
     }
 
