@@ -26,6 +26,8 @@ pub struct InGameEntity;
 pub enum GameState {
     #[default]
     MainMenu,
+    NameEntry,
+    Lore,
     InGame,
     Restarting,
     GameOver,
@@ -41,3 +43,6 @@ pub enum InGameState {
     Restarting,
     ChoosingUpgrade,
 }
+
+#[derive(Resource, Default)]
+pub struct PlayerName(pub String);

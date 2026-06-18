@@ -1,20 +1,20 @@
 pub fn translate(key: &'static str) -> &'static str {
     match key {
         // Menu principal
-        "menu_play"     => "Partir a l'aventure",
-        "menu_settings" => "Parametres",
-        "menu_quit"     => "Abandonner la quete",
+        "menu_play"     => "Partir à l'aventure",
+        "menu_settings" => "Paramètres",
+        "menu_quit"     => "Abandonner la quête",
         // Menu pause
         "pause_title"     => "PAUSE",
         "pause_resume"    => "Reprendre",
         "pause_restart"   => "Recommencer",
         "pause_main_menu" => "Menu principal",
-        "pause_quit"      => "Abandonner la quete",
+        "pause_quit"      => "Abandonner la quête",
         // Menu mort
-        "death_subtitle" => "Vous etes mort...",
+        "death_subtitle" => "Vous êtes mort...",
         "death_retry"    => "Retenter l'aventure",
         "death_main_menu"=> "Menu principal",
-        "death_quit"     => "Abandonner la quete",
+        "death_quit"     => "Abandonner la quête",
         // Menu parametres
         "settings_title"    => "PARAMETRES",
         "settings_fps"      => "LIMITE FPS",
