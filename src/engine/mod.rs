@@ -81,7 +81,6 @@ pub(crate) fn init_app() {
         )
         .add_plugins((
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(32.0),
-            RapierDebugRenderPlugin::default(),
         ))
         .init_state::<GameState>()
         .add_sub_state::<InGameState>()
