@@ -3,7 +3,7 @@ use crate::boss::attack::{
 };
 use crate::boss::damage::{boss_contact_damage_system, boss_projectile_damage_system};
 use crate::boss::death::{BossDiedEvent, boss_death_system};
-use crate::boss::movement::boss_movement_system;
+use crate::boss::movement_boss::boss_movement_system;
 use crate::boss::spawn::spawn_boss;
 use crate::exceptions::log_rtg_exception;
 use crate::round::RoundStartedEvent;

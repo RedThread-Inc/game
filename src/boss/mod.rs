@@ -1,9 +1,9 @@
 pub(crate) mod attack;
 pub(crate) mod death;
-pub(crate) mod movement;
 pub(crate) mod plugin;
 pub(crate) mod spawn;
 pub(crate) mod damage;
+mod movement_boss;
 
 use bevy::prelude::*;
 

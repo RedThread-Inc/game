@@ -10,6 +10,7 @@ use bevy::window::PrimaryWindow;
 use bevy_rapier2d::prelude::*;
 use crate::core::collision_groups::boss_membership;
 use rand::Rng;
+use crate::enemy::pathfinding::AStarPath;
 
 pub(crate) fn spawn_boss(
     mut commands: Commands,
@@ -68,6 +69,7 @@ pub(crate) fn spawn_boss(
         AnimationTimer(Timer::from_seconds(ANIM_DT, TimerMode::Repeating)),
         BossAttackTimer(Timer::from_seconds(stats.fire_rate, TimerMode::Repeating)),
         InGameEntity,
+        AStarPath::default(),
         RigidBody::Dynamic,
         Collider::cuboid(16.0, 16.0),
         LockedAxes::ROTATION_LOCKED,
