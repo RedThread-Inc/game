@@ -7,7 +7,7 @@ use crate::menu::settings_menu::SettingsMenuPlugin;
 use crate::round::plugin::RoundPlugin;
 use crate::settings::GameSettings;
 use crate::upgrade::plugin::UpgradePlugin;
-use crate::{GameState, InGameEntity, InGameState};
+use crate::{GameState, InGameEntity, InGameState, PlayerName};
 use bevy::{
     prelude::*,
     window::{Window, WindowPlugin, WindowResolution},
@@ -20,6 +20,8 @@ use crate::menu::death_menu::DeathMenuPlugin;
 use crate::boss::plugin::BossPlugin;
 use bevy_rapier2d::prelude::*;
 use crate::exceptions::log_rtg_exception;
+use crate::menu::lore_screen::LoreScreenPlugin;
+use crate::menu::name_entry::NameEntryPlugin;
 
 #[derive(Resource, Clone)]
 pub(crate) struct GameFont(pub(crate) Handle<Font>);
@@ -88,9 +90,10 @@ pub(crate) fn init_app() {
         .init_resource::<GameSettings>()
         .init_resource::<FrameLimiter>()
         .init_resource::<GameFont>()
+        .init_resource::<PlayerName>()
         .add_systems(Update, tick_cooldowns)
         .add_systems(Last, apply_frame_limit)
-        .add_plugins((PlayerPlugin, EnemyPlugin, InterfacePlugin, MainMenuPlugin, PauseMenuPlugin, DeathMenuPlugin, SettingsMenuPlugin, RoundPlugin, UpgradePlugin, BossPlugin))
+        .add_plugins((PlayerPlugin, EnemyPlugin, InterfacePlugin, MainMenuPlugin, PauseMenuPlugin, DeathMenuPlugin, SettingsMenuPlugin, RoundPlugin, UpgradePlugin, BossPlugin, NameEntryPlugin, LoreScreenPlugin))
         .add_systems(Startup, setup_camera)
         .add_systems(OnEnter(GameState::InGame), setup_generator.pipe(log_rtg_exception))
         .add_systems(OnExit(GameState::InGame), cleanup_game)

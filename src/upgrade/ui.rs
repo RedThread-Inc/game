@@ -67,7 +67,7 @@ pub(crate) fn spawn_upgrade_ui(mut commands: Commands, round: Res<RoundState>) {
                 ));
 
                 panel.spawn((
-                    Text::new("Choisis une amelioration :"),
+                    Text::new("Choisis une amélioration :"),
                     TextFont { font_size: 20.0, ..default() },
                     TextColor(INK),
                 ));

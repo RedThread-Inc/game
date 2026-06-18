@@ -306,7 +306,7 @@ fn handle_buttons(
             Interaction::Pressed  => {
                 *color = BackgroundColor(WOOD_PRESSED);
                 match button {
-                    MenuButton::Play     => next_state.set(GameState::InGame),
+                    MenuButton::Play     => next_state.set(GameState::NameEntry),
                     MenuButton::Settings => next_state.set(GameState::Settings),
                     MenuButton::Quit     => { app_exit.write(AppExit::Success); }
                 }
