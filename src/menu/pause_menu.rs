@@ -2,6 +2,9 @@ use bevy::ecs::relationship::RelatedSpawnerCommands;
 use bevy::prelude::*;
 use crate::InGameState;
 use crate::GameState;
+use crate::engine::GameFont;
+use crate::locale::t;
+use crate::settings::GameSettings;
 use bevy::app::AppExit;
 
 pub struct PauseMenuPlugin;
@@ -40,10 +43,11 @@ const WOOD_PRESSED: Color = Color::srgb(0.259, 0.153, 0.059);
 
 fn toggle_pause(
     keys: Res<ButtonInput<KeyCode>>,
+    settings: Res<GameSettings>,
     state: Res<State<InGameState>>,
     mut next_state: ResMut<NextState<InGameState>>,
 ) {
-    if keys.just_pressed(KeyCode::Escape) {
+    if keys.just_pressed(settings.key_pause) {
         match state.get() {
             InGameState::Playing => next_state.set(InGameState::Paused),
             InGameState::Paused => next_state.set(InGameState::Playing),
@@ -52,7 +56,9 @@ fn toggle_pause(
     }
 }
 
-fn setup_pause_menu(mut commands: Commands) {
+fn setup_pause_menu(mut commands: Commands, settings: Res<GameSettings>, font: Res<GameFont>) {
+    let lang = &settings.language;
+    let f = &font.0;
     commands
         .spawn((
             Node {
@@ -81,13 +87,13 @@ fn setup_pause_menu(mut commands: Commands) {
                 .with_children(|col| {
                     col.spawn((
                         Text::new("- * -"),
-                        TextFont { font_size: 24.0, ..default() },
+                        TextFont { font: f.clone(), font_size: 24.0, ..default() },
                         TextColor(GOLD),
                     ));
 
                     col.spawn((
-                        Text::new("PAUSE"),
-                        TextFont { font_size: 64.0, ..default() },
+                        Text::new(t(lang, "pause_title")),
+                        TextFont { font: f.clone(), font_size: 64.0, ..default() },
                         TextColor(INK),
                     ));
 
@@ -101,9 +107,9 @@ fn setup_pause_menu(mut commands: Commands) {
                         BackgroundColor(GOLD),
                     ));
 
-                    spawn_pause_button(col, "Reprendre", PauseButton::Resume);
-                    spawn_pause_button(col, "Recommencer", PauseButton::Restart);
-                    spawn_pause_button(col, "Menu principal", PauseButton::MainMenu);
+                    spawn_pause_button(col, t(lang, "pause_resume"),    PauseButton::Resume,    f);
+                    spawn_pause_button(col, t(lang, "pause_restart"),   PauseButton::Restart,   f);
+                    spawn_pause_button(col, t(lang, "pause_main_menu"), PauseButton::MainMenu,  f);
 
                     col.spawn((
                         Node {
@@ -115,12 +121,12 @@ fn setup_pause_menu(mut commands: Commands) {
                         BackgroundColor(GOLD),
                     ));
 
-                    spawn_pause_button(col, "Abandonner la quete", PauseButton::Quit);
+                    spawn_pause_button(col, t(lang, "pause_quit"), PauseButton::Quit, f);
                 });
         });
 }
 
-fn spawn_pause_button(parent: &mut RelatedSpawnerCommands<ChildOf>, label: &str, button: PauseButton) {
+fn spawn_pause_button(parent: &mut RelatedSpawnerCommands<ChildOf>, label: &str, button: PauseButton, font: &Handle<Font>) {
     parent
         .spawn((
             Node {
@@ -151,7 +157,7 @@ fn spawn_pause_button(parent: &mut RelatedSpawnerCommands<ChildOf>, label: &str,
                 .with_children(|btn| {
                     btn.spawn((
                         Text::new(label),
-                        TextFont { font_size: 22.0, ..default() },
+                        TextFont { font: font.clone(), font_size: 22.0, ..default() },
                         TextColor(GOLD),
                     ));
                 });

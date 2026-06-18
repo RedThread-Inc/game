@@ -1,6 +1,9 @@
 use bevy::ecs::relationship::RelatedSpawnerCommands;
 use bevy::prelude::*;
 use crate::GameState;
+use crate::engine::GameFont;
+use crate::locale::t;
+use crate::settings::GameSettings;
 use bevy::app::AppExit;
 use crate::round::RoundStartedEvent;
 
@@ -42,6 +45,7 @@ fn stop_menu_music(
 #[derive(Component)]
 enum MenuButton {
     Play,
+    Settings,
     Quit,
 }
 
@@ -69,7 +73,9 @@ const FLAME_CORE:   Color = Color::srgb(1.00, 0.95, 0.40);
 const FLAME_MID:    Color = Color::srgb(1.00, 0.55, 0.10);
 const FLAME_OUTER:  Color = Color::srgb(0.80, 0.20, 0.05);
 
-fn setup_menu(mut commands: Commands) {
+fn setup_menu(mut commands: Commands, settings: Res<GameSettings>, font: Res<GameFont>) {
+    let lang = &settings.language;
+    let f = &font.0;
     commands
         .spawn((
             Node {
@@ -101,13 +107,13 @@ fn setup_menu(mut commands: Commands) {
                 .with_children(|col| {
                     col.spawn((
                         Text::new("- * -"),
-                        TextFont { font_size: 28.0, ..default() },
+                        TextFont { font: f.clone(), font_size: 28.0, ..default() },
                         TextColor(GOLD),
                     ));
 
                     col.spawn((
                         Text::new("REDTHREAD"),
-                        TextFont { font_size: 72.0, ..default() },
+                        TextFont { font: f.clone(), font_size: 72.0, ..default() },
                         TextColor(INK),
                     ));
 
@@ -121,8 +127,9 @@ fn setup_menu(mut commands: Commands) {
                         BackgroundColor(GOLD),
                     ));
 
-                    spawn_button(col, "Partir a l'aventure", MenuButton::Play);
-                    spawn_button(col, "Abandonner la quete", MenuButton::Quit);
+                    spawn_button(col, t(lang, "menu_play"),     MenuButton::Play,     f);
+                    spawn_button(col, t(lang, "menu_settings"), MenuButton::Settings, f);
+                    spawn_button(col, t(lang, "menu_quit"),     MenuButton::Quit,     f);
 
                     col.spawn((
                         Node {
@@ -248,7 +255,7 @@ fn animate_torches(
     }
 }
 
-fn spawn_button(parent: &mut RelatedSpawnerCommands<ChildOf>, label: &str, button: MenuButton) {
+fn spawn_button(parent: &mut RelatedSpawnerCommands<ChildOf>, label: &str, button: MenuButton, font: &Handle<Font>) {
     parent
         .spawn((
             Node {
@@ -279,7 +286,7 @@ fn spawn_button(parent: &mut RelatedSpawnerCommands<ChildOf>, label: &str, butto
                 .with_children(|btn| {
                     btn.spawn((
                         Text::new(label),
-                        TextFont { font_size: 22.0, ..default() },
+                        TextFont { font: font.clone(), font_size: 22.0, ..default() },
                         TextColor(GOLD),
                     ));
                 });
@@ -299,8 +306,9 @@ fn handle_buttons(
             Interaction::Pressed  => {
                 *color = BackgroundColor(WOOD_PRESSED);
                 match button {
-                    MenuButton::Play => next_state.set(GameState::InGame),
-                    MenuButton::Quit => { app_exit.write(AppExit::Success); }
+                    MenuButton::Play     => next_state.set(GameState::InGame),
+                    MenuButton::Settings => next_state.set(GameState::Settings),
+                    MenuButton::Quit     => { app_exit.write(AppExit::Success); }
                 }
             }
         }

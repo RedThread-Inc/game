@@ -1,5 +1,6 @@
 use crate::enemy::Enemy;
 use crate::player::{AnimationState, Facing, MOVE_SPEED, Player};
+use crate::settings::GameSettings;
 use bevy::input::ButtonInput;
 use bevy::math::Vec2;
 use bevy::prelude::{KeyCode, Res, Single, Time, Transform, With, Without};
@@ -8,25 +9,26 @@ use crate::exceptions::RTGException;
 
 pub(crate) fn move_player_system(
     input: Res<ButtonInput<KeyCode>>,
+    settings: Res<GameSettings>,
     player: Single<(&mut Velocity, &mut AnimationState), (With<Player>, Without<Enemy>)>,
 ) -> Result<(), RTGException> {
     let (mut velocity, mut anim) = player.into_inner();
 
     let mut direction = Vec2::ZERO;
 
-    if input.pressed(KeyCode::ArrowLeft) || input.pressed(KeyCode::KeyA) {
+    if input.pressed(settings.key_left) || input.pressed(KeyCode::ArrowLeft) {
         direction.x -= 1.0;
         anim.facing = Facing::Left;
     }
-    if input.pressed(KeyCode::ArrowRight) || input.pressed(KeyCode::KeyD) {
+    if input.pressed(settings.key_right) || input.pressed(KeyCode::ArrowRight) {
         direction.x += 1.0;
         anim.facing = Facing::Right;
     }
-    if input.pressed(KeyCode::ArrowUp) || input.pressed(KeyCode::KeyW) {
+    if input.pressed(settings.key_up) || input.pressed(KeyCode::ArrowUp) {
         direction.y += 1.0;
         anim.facing = Facing::Up;
     }
-    if input.pressed(KeyCode::ArrowDown) || input.pressed(KeyCode::KeyS) {
+    if input.pressed(settings.key_down) || input.pressed(KeyCode::ArrowDown) {
         direction.y -= 1.0;
         anim.facing = Facing::Down;
     }
