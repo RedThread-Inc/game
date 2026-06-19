@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_rapier2d::prelude::{Collider, RigidBody};
+use rand::Rng;
 use crate::core::collision_groups::world_membership;
 use crate::map::{
     assets::{prepare_tilemap_handles, TilemapHandles},
@@ -50,7 +51,8 @@ pub(crate) fn setup_generator(
     let grid_x = (window.width() / TILE_SIZE).floor() as u32;
     let grid_y = (window.height() / TILE_SIZE).floor() as u32;
 
-    let height_map = HeightMap::generate(grid_x, grid_y, DEBUG_SEED, PERLIN_SCALE);
+    let seed: u32 = rand::rng().random();
+    let height_map = HeightMap::generate(grid_x, grid_y, seed, PERLIN_SCALE);
     let handles =
         prepare_tilemap_handles(&asset_server, &mut atlas_layouts, ASSETS_PATH, TILEMAP_FILE);
 
