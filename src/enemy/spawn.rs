@@ -7,6 +7,7 @@ use crate::InGameEntity;
 use crate::round::RoundState;
 use rand::Rng;
 use crate::core::collision_groups::enemy_membership;
+use crate::enemy::pathfinding::AStarPath;
 use crate::enemy::projectile::ENEMY_ATTACK_RANGE;
 use crate::map::generate::{TerrainHeightMap, TILE_SIZE as MAP_TILE_SIZE};
 use crate::map::perlin::TerrainZone;
@@ -71,6 +72,7 @@ pub(crate) fn spawn_enemies(
             },
             AnimationTimer(Timer::from_seconds(ANIM_DT, TimerMode::Repeating)),
             InGameEntity,
+            AStarPath::default(),
             RigidBody::Dynamic,
             Collider::cuboid(10.0, 8.0),
             LockedAxes::ROTATION_LOCKED,
@@ -129,6 +131,7 @@ pub(crate) fn spawn_enemies(
             },
             AnimationTimer(Timer::from_seconds(ANIM_DT, TimerMode::Repeating)),
             InGameEntity,
+            AStarPath::default(),
             RigidBody::Dynamic,
             Collider::cuboid(12.0, 8.0),
             LockedAxes::ROTATION_LOCKED,

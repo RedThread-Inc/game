@@ -107,7 +107,7 @@ fn play_damage_sound(
     } else {
         "player_damage_2.ogg"
     };
-    maybe_play(commands, asset_server, sound, 0.80);
+    maybe_play(commands, asset_server, sound, 1.0);
 }
 
 pub(crate) fn pickup_potion_system(

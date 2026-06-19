@@ -1,6 +1,6 @@
 use crate::enemy::animate::animate_enemies_system;
 use crate::enemy::death::enemy_death_system;
-use crate::enemy::movement::move_enemy_towards_player_system;
+use crate::enemy::movement_enemy::move_enemy_towards_player_system;
 use crate::enemy::projectile::{
     enemy_projectile_hit_player_system, enemy_shoot_system, move_enemy_projectiles_system,
 };
@@ -10,6 +10,7 @@ use crate::player::fight::pickup_potion_system;
 use crate::round::RoundStartedEvent;
 use crate::{GameState, InGameState};
 use bevy::prelude::*;
+use crate::enemy::movement_enemy::move_ranged_enemy_system;
 
 pub(crate) struct EnemyPlugin;
 
@@ -27,6 +28,7 @@ impl Plugin for EnemyPlugin {
             (
                 animate_enemies_system,
                 move_enemy_towards_player_system.pipe(log_rtg_exception),
+                move_ranged_enemy_system.pipe(log_rtg_exception),
                 enemy_death_system,
                 pickup_potion_system,
                 enemy_shoot_system,

@@ -1,9 +1,10 @@
 pub(crate) mod animate;
-pub(crate) mod movement;
 pub(crate) mod plugin;
 pub(crate) mod spawn;
 pub(crate) mod death;
 pub(crate) mod projectile;
+mod movement_enemy;
+pub(crate) mod pathfinding;
 
 use bevy::prelude::*;
 

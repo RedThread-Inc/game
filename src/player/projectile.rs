@@ -89,7 +89,7 @@ pub(crate) fn shoot_projectile_system(
     let total = 1 + upgrades.extra_projectiles;
     let spread = SPREAD_ANGLE.to_radians();
 
-    maybe_play(&mut commands, &asset_server, "player_attack.ogg", 0.85);
+    maybe_play(&mut commands, &asset_server, "player_attack.ogg", 0.2);
 
     for i in 0..total {
         let angle_offset = if total == 1 {
@@ -165,7 +165,7 @@ pub(crate) fn player_projectile_hit_system(
                 enemy.health -= projectile.damage;
                 commands.entity(proj_entity).despawn();
                 if sound_cooldowns.enemy_hit.is_finished() {
-                    if maybe_play(&mut commands, &asset_server, "squelette_triso_damage.ogg", 0.70) {
+                    if maybe_play(&mut commands, &asset_server, "squelette_triso_damage.ogg", 0.20) {
                         sound_cooldowns.enemy_hit.reset();
                     }
                 }
@@ -174,7 +174,7 @@ pub(crate) fn player_projectile_hit_system(
                 boss.health -= projectile.damage;
                 commands.entity(proj_entity).despawn();
                 if sound_cooldowns.enemy_hit.is_finished() {
-                    if maybe_play(&mut commands, &asset_server, "squelette_triso_damage.ogg", 0.70) {
+                    if maybe_play(&mut commands, &asset_server, "squelette_triso_damage.ogg", 0.20) {
                         sound_cooldowns.enemy_hit.reset();
                     }
                 }

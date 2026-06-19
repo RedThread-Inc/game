@@ -98,10 +98,10 @@ pub(crate) fn setup_generator(
     let thickness = TILE_SIZE;
 
     let borders = [
-        (0.0,                    map_h / 2.0,   map_w / 2.0 + thickness, thickness / 2.0), // haut
-        (0.0,                   -map_h / 2.0,   map_w / 2.0 + thickness, thickness / 2.0), // bas
-        (-map_w / 2.0,           0.0,           thickness / 2.0,          map_h / 2.0),     // gauche
-        ( map_w / 2.0,           0.0,           thickness / 2.0,          map_h / 2.0),     // droite
+        (0.0,                              map_h / 2.0 + thickness / 2.0,    map_w / 2.0 + thickness, thickness / 2.0),
+        (0.0,                             -map_h / 2.0 - thickness / 2.0,    map_w / 2.0 + thickness, thickness / 2.0),
+        (-map_w / 2.0 - thickness / 2.0,   0.0,                              thickness / 2.0,          map_h / 2.0),
+        ( map_w / 2.0 + thickness / 2.0,   0.0,                              thickness / 2.0,          map_h / 2.0),
     ];
 
     for (x, y, hw, hh) in borders {
