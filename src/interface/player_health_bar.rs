@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use crate::InGameEntity;
 use crate::player::Player;
 
 #[derive(Component)]
@@ -15,6 +16,7 @@ pub(crate) fn spawn_player_health_bar(mut commands: Commands) {
             ..default()
         },
         BackgroundColor(Color::srgb(0.7098039215686275, 0.7098039215686275, 0.7019607843137254)),
+        InGameEntity
     ))
         .with_children(|parent| {
             parent.spawn((
@@ -41,6 +43,6 @@ pub(crate) fn update_player_health_bar(
         return;
     };
 
-    let health_percent = (player.health / 100.0).clamp(0.0, 1.0);
+    let health_percent = (player.health / player.max_health).clamp(0.0, 1.0);
     bar.width = Val::Percent(health_percent * 100.0);
 }

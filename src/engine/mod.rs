@@ -1,24 +1,69 @@
-use crate::enemy::movement::move_enemy_towards_player_system;
+use crate::audio::{tick_cooldowns, SoundCooldowns};
 use crate::enemy::plugin::EnemyPlugin;
 use crate::player::plugin::PlayerPlugin;
 use crate::interface::plugin::InterfacePlugin;
+use crate::menu::main_menu::MainMenuPlugin;
+use crate::menu::settings_menu::SettingsMenuPlugin;
+use crate::round::plugin::RoundPlugin;
+use crate::settings::GameSettings;
+use crate::upgrade::plugin::UpgradePlugin;
+use crate::{GameState, InGameEntity, InGameState, PlayerName};
 use bevy::{
     prelude::*,
     window::{Window, WindowPlugin, WindowResolution},
 };
 use bevy::window::{PrimaryWindow, WindowMode};
 use bevy_procedural_tilemaps::prelude::*;
-use crate::map::generate::{map_pixel_dimensions, setup_generator, TILE_SIZE};
+use crate::map::generate::{setup_generator, TILE_SIZE};
+use crate::menu::pause_menu::PauseMenuPlugin;
+use crate::menu::death_menu::DeathMenuPlugin;
+use crate::boss::plugin::BossPlugin;
+use bevy_rapier2d::prelude::*;
+use crate::exceptions::log_rtg_exception;
+use crate::menu::lore_screen::LoreScreenPlugin;
+use crate::menu::name_entry::NameEntryPlugin;
+
+#[derive(Resource, Clone)]
+pub(crate) struct GameFont(pub(crate) Handle<Font>);
+
+impl FromWorld for GameFont {
+    fn from_world(world: &mut World) -> Self {
+        let asset_server = world.resource::<AssetServer>();
+        GameFont(asset_server.load("fonts/Ubuntu-R.ttf"))
+    }
+}
+
+#[derive(Resource)]
+struct FrameLimiter(std::time::Instant);
+
+impl Default for FrameLimiter {
+    fn default() -> Self {
+        Self(std::time::Instant::now())
+    }
+}
+
+fn apply_frame_limit(settings: Res<GameSettings>, mut limiter: ResMut<FrameLimiter>) {
+    if let Some(target_secs) = settings.fps_limit.target_secs() {
+        let target = std::time::Duration::from_secs_f64(target_secs);
+        let elapsed = limiter.0.elapsed();
+        if elapsed < target {
+            std::thread::sleep(target - elapsed);
+        }
+    }
+    limiter.0 = std::time::Instant::now();
+}
+
+pub(crate) fn cleanup_game(mut commands: Commands, query: Query<Entity, With<InGameEntity>>) {
+    for entity in &query {
+        commands.entity(entity).despawn_related::<Children>();
+        commands.entity(entity).despawn();
+    }
+
+}
 
 pub(crate) fn init_app() {
-
-    //Initialize windows with 0px but it's evaluated after in setup generator function
-    let grid_x = 0;
-    let grid_y = 0;
-    let map_size = map_pixel_dimensions(grid_x, grid_y);
-
     App::new()
-        .insert_resource(ClearColor(Color::WHITE))
+        .insert_resource(ClearColor(Color::srgb(0.847, 0.769, 0.588)))
         .add_plugins(
             DefaultPlugins
                 .set(AssetPlugin {
@@ -27,25 +72,37 @@ pub(crate) fn init_app() {
                 })
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        resolution: WindowResolution::new(map_size.x as u32, map_size.y as u32),
-                        resizable: false,
-                        mode: WindowMode::Fullscreen(MonitorSelection::Primary, VideoModeSelection::Current),
+                        resolution: WindowResolution::new(1920, 1080),
+                        resizable: true,
+                        mode: WindowMode::Windowed,
                         ..default()
                     }),
                     ..default()
                 })
                 .set(ImagePlugin::default_nearest()),
         )
-        .add_plugins((PlayerPlugin, EnemyPlugin, InterfacePlugin))
-        .add_systems(Startup, |windows: Query<&Window, With<PrimaryWindow>>| {
-            let window = windows.single().expect("Primary window must exist");
-            let grid_x = (window.width() / TILE_SIZE).floor() as u32;
-            let grid_y = (window.height() / TILE_SIZE).floor() as u32;
-            let map_size = map_pixel_dimensions(grid_x, grid_y);
-            println!("Map size: {:?}", map_size);
-        })
-        .add_plugins(ProcGenSimplePlugin::<Cartesian3D, Sprite>::default())
-        .add_systems(Startup, (setup_camera, setup_generator))
+        .add_plugins((
+            RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(32.0),
+        ))
+        .init_state::<GameState>()
+        .add_sub_state::<InGameState>()
+        .init_resource::<SoundCooldowns>()
+        .init_resource::<GameSettings>()
+        .init_resource::<FrameLimiter>()
+        .init_resource::<GameFont>()
+        .init_resource::<PlayerName>()
+        .add_systems(Update, tick_cooldowns)
+        .add_systems(Last, apply_frame_limit)
+        .add_plugins((PlayerPlugin, EnemyPlugin, InterfacePlugin, MainMenuPlugin, PauseMenuPlugin, DeathMenuPlugin, SettingsMenuPlugin, RoundPlugin, UpgradePlugin, BossPlugin, NameEntryPlugin, LoreScreenPlugin))
+        .add_systems(Startup, setup_camera)
+        .add_systems(OnEnter(GameState::InGame), setup_generator.pipe(log_rtg_exception))
+        .add_systems(OnExit(GameState::InGame), cleanup_game)
+        .add_systems(OnEnter(GameState::Restarting), cleanup_game)
+        .add_systems(OnEnter(GameState::Restarting),
+                     |mut next: ResMut<NextState<GameState>>| {
+                         next.set(GameState::InGame);
+                     }
+        )
         .run();
 }
 

@@ -1,60 +1,47 @@
 use crate::enemy::Enemy;
 use crate::player::{AnimationState, Facing, MOVE_SPEED, Player};
+use crate::settings::GameSettings;
 use bevy::input::ButtonInput;
 use bevy::math::Vec2;
 use bevy::prelude::{KeyCode, Res, Single, Time, Transform, With, Without};
+use bevy_rapier2d::prelude::Velocity;
 use crate::exceptions::RTGException;
 
-pub(crate) fn move_player(
+pub(crate) fn move_player_system(
     input: Res<ButtonInput<KeyCode>>,
-    time: Res<Time>,
-    player: Single<(&mut Transform, &mut AnimationState), (With<Player>, Without<Enemy>)>,
+    settings: Res<GameSettings>,
+    player: Single<(&mut Velocity, &mut AnimationState), (With<Player>, Without<Enemy>)>,
 ) -> Result<(), RTGException> {
-    let (mut transform, mut anim) = player.into_inner();
+    let (mut velocity, mut anim) = player.into_inner();
 
     let mut direction = Vec2::ZERO;
 
-    if input.pressed(KeyCode::ArrowLeft) || input.pressed(KeyCode::KeyA) {
+    if input.pressed(settings.key_left) || input.pressed(KeyCode::ArrowLeft) {
         direction.x -= 1.0;
         anim.facing = Facing::Left;
     }
-    if input.pressed(KeyCode::ArrowRight) || input.pressed(KeyCode::KeyD) {
+    if input.pressed(settings.key_right) || input.pressed(KeyCode::ArrowRight) {
         direction.x += 1.0;
         anim.facing = Facing::Right;
     }
-    if input.pressed(KeyCode::ArrowUp) || input.pressed(KeyCode::KeyW) {
+    if input.pressed(settings.key_up) || input.pressed(KeyCode::ArrowUp) {
         direction.y += 1.0;
         anim.facing = Facing::Up;
     }
-    if input.pressed(KeyCode::ArrowDown) || input.pressed(KeyCode::KeyS) {
+    if input.pressed(settings.key_down) || input.pressed(KeyCode::ArrowDown) {
         direction.y -= 1.0;
         anim.facing = Facing::Down;
     }
 
     anim.moving = direction != Vec2::ZERO;
 
-    if anim.moving {
-        let delta = direction.normalize() * MOVE_SPEED * time.delta_secs();
-        if time.delta_secs() <= 0.0 {
-            return Err(RTGException::RTG_PLAYER_MOVEMENT_DELTA_TIME_INVALID);
-        }
-        transform.translation.x += delta.x;
-        transform.translation.y += delta.y;
-    }
+    *velocity = if anim.moving {
+        Velocity::linear(direction.normalize() * MOVE_SPEED)
+    } else {
+        Velocity::zero()
+    };
+
+
     Ok(())
 }
-
-pub(crate) fn move_player_system(
-    input: Res<ButtonInput<KeyCode>>,
-    time: Res<Time>,
-    player: Single<(&mut Transform, &mut AnimationState), (With<Player>, Without<Enemy>)>,
-) -> Result<(), RTGException> {
-     if let Err(e) = move_player(input, time, player) {
-         println!("{}", e.to_string());
-         return Err(e);
-     } else {
-         Ok(())
-     }
-}
-
 
